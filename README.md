@@ -11,7 +11,7 @@ AI-powered git commit and push tool using Ollama.
 
 1. Pull the Ollama model (if not already done):
    ```bash
-   ollama pull qwen:14b
+   ollama pull ministral-3:8b
    ```
 
 2. Start Ollama:
