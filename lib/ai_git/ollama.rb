@@ -17,13 +17,18 @@ module AIGit
     def generate_commit_message(diff)
       raise 'No staged changes to generate commit message for' if diff.to_s.strip.empty?
 
-      prompt = 'Generate a commit message for these changes. ' \
-               'First line: short commit title (under 72 chars). ' \
-               'Second line: empty. ' \
-               'Third line+: commit message body. ' \
-               'Fourth line: empty. ' \
-               "Last line: 'AI-generated commit message by: https://github.com/kaiquekandykoga/ai_git'. " \
-               'Output only the commit message, no explanations.'
+      prompt = """You are an expert Git commit message writer.
+
+Generate a commit message for the provided changes following this exact format:
+
+1. First line: Short title (< 72 chars, preferably < 50), starting with a verb in imperative present tense.
+2. Second line: Blank
+3. Body (from line 3): Clear explanation of the changes and their rationale.
+4. One blank line after body.
+5. Final line: AI-generated commit message by: https://github.com/kaiquekandykoga/ai_git
+
+Use conventional commit types (feat/fix/refactor/chore/etc.) when appropriate.
+Output nothing but the commit message itself. No quotes, no explanations, no markdown."""
 
       json_body = {
         model: 'llama3.2:3b',
