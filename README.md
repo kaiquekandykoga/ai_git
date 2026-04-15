@@ -1,6 +1,6 @@
 # AI Git
 
-AI‑powered git commit + push tool using **Ollama**
+AI‑powered git commit + push tool using local language models
 
 ## Usage
 
