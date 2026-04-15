@@ -21,8 +21,7 @@ module AIGit
                'First line: short commit title (under 72 chars). ' \
                'Second line: empty. ' \
                'Third line+: commit message body. ' \
-               'Second to last line: AI-generated commit message by: ' \
-               'Last line: https://github.com/kaiquekandykoga/ai_git ' \
+               'Last line: AI-generated commit message by:\nhttps://github.com/kaiquekandykoga/ai_git ' \
                'Output only the commit message, no explanations.'
 
       json_body = {
