@@ -1,6 +1,8 @@
+require_relative "lib/ai_git/version"
+
 Gem::Specification.new do |spec|
   spec.name          = 'ai_git'
-  spec.version       = '0.1.0'
+  spec.version       = AIGit::VERSION
   spec.summary       = 'AI-powered git commit and push tool using Ollama'
   spec.description   = 'Generates intelligent commit messages using Ollama LLMs'
   spec.license      = 'BSD-3-Clause'
