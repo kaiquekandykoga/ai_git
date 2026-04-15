@@ -42,12 +42,12 @@ The app will generate a commit message using Ollama, commit your staged changes,
 
 2. Install locally:
    ```bash
-   gem install ./ai_git-0.1.0.gem
+   gem install ./ai_git-0.0.0.gem
    ```
 
 ## Publishing
 
 1. Push to RubyGems:
    ```bash
-   gem push ai_git-0.1.0.gem
+   gem push ai_git-0.0.0.gem
    ```
