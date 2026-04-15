@@ -12,20 +12,20 @@ module AIGit
     diff = AIGit::Git.diff
     branch = AIGit::Git.current_branch
 
-    puts "Staged files:\n#{staged}"
+    puts "Staged Files:\n#{staged}"
     puts "Branch: #{branch}"
-    puts 'Generating commit message...'
+    puts "AI Generating Commit Message"
 
     message = AIGit::Ollama.generate_commit_message(diff)
     message = message.gsub(/\n{2,}/, "\n")
 
-    puts "Commit message: #{message}"
+    puts "Commit Message:\n#{message}"
 
     escaped_msg = message.gsub(/[\\"`$]/) { |c| "\\#{c}" }
     AIGit::Git.run_command('git', "commit -m \"#{escaped_msg}\"")
-    puts 'Committed.'
+    puts "Git Committed"
 
     AIGit::Git.run_command('git', 'push')
-    puts 'Pushed.'
+    puts "Git Pushed"
   end
 end
