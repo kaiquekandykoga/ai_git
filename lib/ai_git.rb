@@ -19,7 +19,7 @@ module AIGit
     message = AIGit::Ollama.generate_commit_message(diff)
     message = message.gsub(/\n{2,}/, "\n")
 
-    puts "\e[1mCommit Message:\e[0m\n#{message}"
+    puts "\e[1mCommit Message:\e[0m\n\n#{message}\n"
 
     escaped_msg = message.gsub(/[\\"`$]/) { |c| "\\#{c}" }
     AIGit::Git.run_command('git', "commit -m \"#{escaped_msg}\"")
