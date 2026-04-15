@@ -1,0 +1,28 @@
+# Build artifacts
+build/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+
+# Executables
+ai_git
+*.exe
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+
+# OS
+.DS_Store
+Thumbs.db
