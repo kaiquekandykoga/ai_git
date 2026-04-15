@@ -1,13 +1,13 @@
 # AI Git
 
-AI-powered git commit and push tool using Ollama
+AI‑powered git commit + push tool using **Ollama**
 
 ## Usage
 
 #### Requirements
 
 - Ruby 4.0+
-- Ollama
+- Ollama running locally
 
 #### Setup
 
@@ -18,7 +18,11 @@ gem install ai_git
 
 #### AI Model
 
-Default model is phi4:14b, but it can be overwritten using env var AI_GIT_MODEL_NAME
+Uses `phi4:14b` by default. Override with:
+
+```
+export AI_GIT_MODEL_NAME="model_name"
+```
 
 #### Run
 
