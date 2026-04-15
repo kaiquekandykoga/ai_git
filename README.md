@@ -9,10 +9,9 @@ AI‑powered git commit + push tool using **Ollama**
 - Ruby 4.0+
 - Ollama running locally
 
-#### Setup
+#### Install
 
 ```bash
-ollama pull phi4:14b  # or: ollama serve
 gem install ai_git
 ```
 
