@@ -10,7 +10,7 @@ AI-powered git commit and push tool using Ollama
 ## Setup
 
 ```bash
-ollama pull ministral-3:8b  # or: ollama serve
+ollama pull phi4:14b  # or: ollama serve
 gem install ai_git
 ```
 
