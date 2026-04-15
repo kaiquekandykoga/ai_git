@@ -15,6 +15,7 @@ module AIGit
     diff = AIGit::Git.diff
     branch = AIGit::Git.current_branch
 
+    puts "\e[1mModel Name:\e[0m #{model_name}"
     puts "\e[1mStaged Files:\e[0m #{staged}"
     puts "\e[1mBranch:\e[0m #{branch}"
     puts "\e[1mAI Generating Commit Message\e[0m"
