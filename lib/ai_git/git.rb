@@ -16,7 +16,7 @@ module AIGit
     end
 
     def run_command(cmd, args)
-      system("#{cmd} #{args}")
+      system("#{cmd} #{args} > /dev/null 2>&1")
       raise "Command failed: #{cmd} #{args}" if $?.exitstatus != 0
     end
   end
