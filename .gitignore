@@ -5,6 +5,7 @@ build/
 *.so
 *.dylib
 *.dll
+*.gem
 
 # Executables
 *.exe
