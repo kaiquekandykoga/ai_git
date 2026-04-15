@@ -1,6 +1,6 @@
 # AI Git
 
-AI-powered git commit and push tool using Ollama.
+AI-powered git commit and push tool using Ollama
 
 ## Requirements
 
