@@ -32,3 +32,22 @@ AI-powered git commit and push tool using Ollama.
    ```
 
 The app will generate a commit message using Ollama, commit your staged changes, and push to the remote.
+
+## Development
+
+1. Build the gem:
+   ```bash
+   gem build ai_git.gemspec
+   ```
+
+2. Install locally:
+   ```bash
+   gem install ./ai_git-0.1.0.gem
+   ```
+
+## Publishing
+
+1. Push to RubyGems:
+   ```bash
+   gem push ai_git-0.1.0.gem
+   ```
