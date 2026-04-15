@@ -17,7 +17,10 @@ module AIGit
     def generate_commit_message(diff)
       raise 'No staged changes to generate commit message for' if diff.to_s.strip.empty?
 
-      prompt = """You are an expert Git commit message writer.
+      prompt = "You are an expert Git commit message writer.
+
+Here are the changes:
+#{diff}
 
 Generate a commit message for the provided changes following this exact format:
 
@@ -26,7 +29,7 @@ Generate a commit message for the provided changes following this exact format:
 3. Body (from line 3): Clear explanation of the changes and their rationale.
 
 Use conventional commit types (feat/fix/refactor/chore/etc.) when appropriate.
-Output nothing but the commit message itself. No quotes, no explanations, no markdown."""
+Output nothing but the commit message itself. No quotes, no explanations, no markdown."
 
       json_body = {
         model: 'ministral-3:8b',
