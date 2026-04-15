@@ -32,6 +32,15 @@ ai_git
 
 Generates a commit message via Ollama, commits, and pushes
 
+## AI Providers
+
+List of supported AI Providers
+
+| Provider | Reference |
+|---------|---------|
+| Ollama | https://ollama.com
+
+
 ## Development
 
 ```bash
