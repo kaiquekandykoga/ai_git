@@ -22,9 +22,7 @@ module AIGit
                'Second line: empty. ' \
                'Third line+: commit message body. ' \
                'Fourth line: empty. ' \
-               "Fifth line: 'AI-generated commit message by:'. " \
-               'Sixth line: empty. ' \
-               "Last line: 'https://github.com/kaiquekandykoga/ai_git'. " \
+               "Last line: 'AI-generated commit message by: https://github.com/kaiquekandykoga/ai_git'. " \
                'Output only the commit message, no explanations.'
 
       json_body = {
