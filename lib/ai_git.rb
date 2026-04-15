@@ -12,7 +12,7 @@ module AIGit
     diff = AIGit::Git.diff
     branch = AIGit::Git.current_branch
 
-    puts "Staged Files:\n#{staged}"
+    puts "Staged Files: #{staged}"
     puts "Branch: #{branch}"
     puts "AI Generating Commit Message"
 
