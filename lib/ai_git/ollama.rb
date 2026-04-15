@@ -8,33 +8,49 @@ module AIGit
 
     def escape_json(string)
       string.gsub('\\', '\\\\')
-            .gsub('"', '\"')
-            .gsub("\n", '\\n')
-            .gsub("\r", '\\r')
-            .gsub("\t", '\\t')
+        .gsub('"', '\"')
+        .gsub("\n", '\\n')
+        .gsub("\r", '\\r')
+        .gsub("\t", '\\t')
     end
 
     def generate_commit_message(diff)
       raise 'No staged changes to generate commit message for' if diff.to_s.strip.empty?
 
-      prompt = "You are an expert Git commit message writer.
+      prompt = <<~PROMPT
+    You are an expert Git commit message writer. Your only job is to output a commit message — nothing else.
 
-Here are the changes:
-#{diff}
+    Here are the changes:
+    #{diff}
 
-Generate a commit message for the provided changes following this exact format:
+    Rules you MUST follow exactly:
+    - Output ONLY the commit message. No explanations, no quotes, no markdown, no "Here is the commit message", no backticks.
+    - Use this exact structure:
+      1. First line: Conventional commit type + short imperative title (max 72 chars, ideally < 50)
+      2. Second line: blank
+      3. Body (optional but recommended): Clear, concise explanation of WHAT changed and WHY.
 
-1. First line: Short title (< 72 chars, preferably < 50), starting with a verb in imperative present tense.
-2. Second line: Blank
-3. Body (from line 3): Clear explanation of the changes and their rationale.
+    Examples of good output:
+    feat: add user authentication flow
 
-Use conventional commit types (feat/fix/refactor/chore/etc.) when appropriate.
-Output nothing but the commit message itself. No quotes, no explanations, no markdown."
+    Implemented JWT-based login with refresh tokens. Added protected routes middleware.
+
+    fix: prevent null pointer on missing metadata
+
+    Added nil check in ReportGenerator#process before accessing user preferences.
+
+    Now generate the commit message:
+      PROMPT
 
       json_body = {
         model: 'ministral-3:8b',
         prompt: prompt,
-        stream: false
+        stream: false,
+        # These parameters help a lot with strictness:
+        temperature: 0.3,
+        top_p: 0.9,
+        stop: ["\n\n\n", "```", "Here is", "The commit message"],
+        num_predict: 400   # Limit output length
       }.to_json
 
       uri = URI('http://localhost:11434/api/generate')
@@ -49,14 +65,26 @@ Output nothing but the commit message itself. No quotes, no explanations, no mar
       raise 'Failed to connect to Ollama. Is it running?' unless response.is_a?(Net::HTTPSuccess)
 
       data = JSON.parse(response.body)
-      message = data['response'].to_s
+      message = data['response'].to_s.strip
 
-      message = message.gsub('\\n', "\n")
-                       .gsub('\"', '"')
+      # Aggressive cleaning
+      message = message.gsub(/^(Here is|The commit message is|```|json|markdown)/i, '')
+        .gsub(/^>\s*/, '')
+        .gsub(/\\n/, "\n")
+        .strip
 
-      message = message.chomp if message.end_with?('"')
+      # Remove common unwanted prefixes/suffixes
+      lines = message.lines.map(&:strip)
+      lines.reject! { |line| line.match?(/^(Here|Output|Generated|Based on|The changes)/i) }
+
+      message = lines.join("\n").strip
+
+      # Ensure it has at least a title
+      if message.lines.count < 1 || message.strip.empty?
+        message = "chore: update code"  # fallback
+      end
 
       message
-    end
+    end 
   end
 end
