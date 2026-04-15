@@ -12,5 +12,5 @@ Gem::Specification.new do |spec|
   spec.requirements = []
   spec.required_ruby_version = '>= 4.0'
 
-  spec.homepage = 'https://github.com/koga/ai_git'
+  spec.homepage = 'https://github.com/kaiquekandykoga/ai_git'
 end
