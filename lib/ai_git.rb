@@ -13,8 +13,8 @@ module AIGit
     branch = AIGit::Git.current_branch
 
     puts "\e[1mStaged Files:\e[0m #{staged}"
-    puts "Branch: #{branch}"
-    puts "AI Generating Commit Message"
+    puts "\e[1mBranch:\e[0m #{branch}"
+    puts "\e[1mAI Generating Commit Message\e[0m"
 
     message = AIGit::Ollama.generate_commit_message(diff)
     message = message.gsub(/\n{2,}/, "\n")
