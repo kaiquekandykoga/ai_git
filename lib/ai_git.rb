@@ -12,7 +12,7 @@ module AIGit
     diff = AIGit::Git.diff
     branch = AIGit::Git.current_branch
 
-    puts "\e[1mStaged Files: #{staged}\e[0m"
+    puts "\e[1mStaged Files:\e[0m #{staged}"
     puts "Branch: #{branch}"
     puts "AI Generating Commit Message"
 
