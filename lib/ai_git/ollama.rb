@@ -18,28 +18,59 @@ module AIGit
       raise 'No staged changes to generate commit message for' if diff.to_s.strip.empty?
 
       prompt = <<~PROMPT
-    You are an expert Git commit message writer. Your only job is to output a commit message — nothing else.
+  You are an expert Git commit message writer. Output ONLY the commit message — no explanations, no markdown, no backticks, no preamble.
 
-    Here are the changes:
-    #{diff}
+  Here are the changes:
+  #{diff}
 
-    Rules you MUST follow exactly:
-    - Output ONLY the commit message. No explanations, no quotes, no markdown, no "Here is the commit message", no backticks.
-    - Use this exact structure:
-      1. First line: Conventional commit type + short imperative title (max 72 chars, ideally < 50)
-      2. Second line: blank
-      3. Body (optional but recommended): Clear, concise explanation of WHAT changed and WHY.
+  STRICT OUTPUT FORMAT (follow exactly):
 
-    Examples of good output:
-    feat: add user authentication flow
+  <short imperative title, max 72 chars>
 
-    Implemented JWT-based login with refresh tokens. Added protected routes middleware.
+  <blank line>
 
-    fix: prevent null pointer on missing metadata
+  ## Summary
+  <2–4 bullet points covering the most important changes. Each bullet starts with a verb.>
 
-    Added nil check in ReportGenerator#process before accessing user preferences.
+  ## Why
+  <1–3 sentences explaining the motivation or context behind the change. Omit if the reason is obvious.>
 
-    Now generate the commit message:
+  RULES:
+  - Title line: short, specific, imperative mood (e.g. "Add JWT login with refresh token support"). Avoid vague titles like "Update stuff" or "Fix bug".
+  - Summary bullets: describe WHAT changed, not HOW the code looks. Focus on behaviour and impact.
+  - Why section: explain the problem being solved or the goal being achieved. Skip if it adds no value.
+  - No filler phrases ("this commit", "this PR", "as per discussion").
+  - No line should exceed 72 characters.
+
+  EXAMPLES OF GOOD OUTPUT:
+
+  Add JWT-based login with refresh token support
+
+  ## Summary
+  - Implement login endpoint with access and refresh token issuance
+  - Add token refresh route with rotation and expiry validation
+  - Protect private routes via middleware that verifies access tokens
+  - Store refresh tokens using encrypted HTTP-only cookies
+
+  ## Why
+  Users were being logged out on every page reload. Refresh tokens allow
+  sessions to persist securely without requiring re-authentication.
+
+  ---
+
+  Prevent nil crash when user preferences are missing
+
+  ## Summary
+  - Add nil guard in ReportGenerator#process before accessing preferences
+  - Fall back to system defaults when preferences object is absent
+
+  ## Why
+  Reports were raising NoMethodError in production for users created
+  before the preferences feature shipped.
+
+  ---
+
+  Now generate the commit message:
       PROMPT
 
       json_body = {
