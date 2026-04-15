@@ -1,13 +1,13 @@
-require "net/http"
-require "uri"
-require "json"
+require 'net/http'
+require 'uri'
+require 'json'
 
 module AIGit
   module Ollama
     module_function
 
     def escape_json(string)
-      string.gsub("\\", "\\\\")
+      string.gsub('\\', '\\\\')
             .gsub('"', '\\"')
             .gsub("\n", '\\n')
             .gsub("\r", '\\r')
@@ -15,34 +15,37 @@ module AIGit
     end
 
     def generate_commit_message(diff)
-      raise "No staged changes to generate commit message for" if diff.to_s.strip.empty?
+      raise 'No staged changes to generate commit message for' if diff.to_s.strip.empty?
 
-      prompt = "Generate a concise, descriptive commit message for these changes. " \
-               "Output only the commit message, no prefix like 'feat:' or 'fix:', no explanations. " \
-               "Keep it under 72 characters if possible. " \
+      prompt = 'Generate a commit message for these changes. ' \
+               'First line: short commit title (under 72 chars). ' \
+               'Second line: empty. ' \
+               'Third line+: commit message body. ' \
+               'Last line: https://github.com/kaiquekandykoga/ai_git ' \
+               'Output only the commit message, no explanations. ' \
                "Changes:\n#{diff}"
 
       json_body = {
-        model: "llama3.2:3b",
+        model: 'llama3.2:3b',
         prompt: prompt,
         stream: false
       }.to_json
 
-      uri = URI("http://localhost:11434/api/generate")
+      uri = URI('http://localhost:11434/api/generate')
       request = Net::HTTP::Post.new(uri)
-      request["Content-Type"] = "application/json"
+      request['Content-Type'] = 'application/json'
       request.body = json_body
 
       response = Net::HTTP.start(uri.host, uri.port, read_timeout: 120) do |http|
         http.request(request)
       end
 
-      raise "Failed to connect to Ollama. Is it running?" unless response.is_a?(Net::HTTPSuccess)
+      raise 'Failed to connect to Ollama. Is it running?' unless response.is_a?(Net::HTTPSuccess)
 
       data = JSON.parse(response.body)
-      message = data["response"].to_s
+      message = data['response'].to_s
 
-      message = message.gsub("\\n", "\n")
+      message = message.gsub('\\n', "\n")
                        .gsub('\\"', '"')
 
       message = message.chomp if message.end_with?('"')
