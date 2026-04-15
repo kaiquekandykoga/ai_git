@@ -2,32 +2,33 @@
 
 AI-powered git commit and push tool using Ollama.
 
-## Build
+## Requirements
 
-```bash
-mkdir build && cd build
-cmake ..
-make
-```
+- Ruby 4.0+
+- Ollama running with `llama3.2:3b` model
 
-The executable will be at `build/ai_git`.
+## Setup
+
+1. Pull the Ollama model (if not already done):
+   ```bash
+   ollama pull llama3.2:3b
+   ```
+
+2. Start Ollama:
+   ```bash
+   ollama serve
+   ```
 
 ## Run
 
-1. Ensure you have staged files:
+1. Stage your files:
    ```bash
    git add <files>
    ```
 
-2. Ensure Ollama is running with `llama3.2:3b`:
+2. Run the app:
    ```bash
-   ollama pull llama3.2:3b
-   ollama serve
-   ```
-
-3. Run the app:
-   ```bash
-   ./build/ai_git
+   ./bin/ai_git
    ```
 
 The app will generate a commit message using Ollama, commit your staged changes, and push to the remote.
