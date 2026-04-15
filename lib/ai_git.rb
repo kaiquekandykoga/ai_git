@@ -7,6 +7,8 @@ module AIGit
   module_function
 
   def run
+    model_name = ENV["AI_GIT_MODEL_NAME"] || "phi4:14b"
+
     staged = AIGit::Git.staged_files
     abort 'Error: No staged files. Use `git add` first.' if staged.to_s.strip.empty?
 
@@ -18,7 +20,7 @@ module AIGit
     puts "\e[1mAI Generating Commit Message\e[0m"
 
     result = Benchmark.measure do
-      message = AIGit::Ollama.generate_commit_message(diff)
+      message = AIGit::Ollama.generate_commit_message(diff, model_name)
       message = message.gsub(/\n{2,}/, "\n")
 
       puts "\e[1mCommit Message:\e[0m\n\n#{message}\n"

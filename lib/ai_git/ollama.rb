@@ -14,7 +14,7 @@ module AIGit
         .gsub("\t", '\\t')
     end
 
-    def generate_commit_message(diff)
+    def generate_commit_message(diff, model_name)
       raise 'No staged changes to generate commit message for' if diff.to_s.strip.empty?
 
       prompt = <<~PROMPT
@@ -43,7 +43,7 @@ module AIGit
       PROMPT
 
       json_body = {
-        model: 'phi4:14b',
+        model: model_name,
         prompt: prompt,
         stream: false,
         # These parameters help a lot with strictness:
