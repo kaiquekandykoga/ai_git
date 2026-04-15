@@ -37,7 +37,3 @@ gem push ai_git-0.1.0.gem
 - Git operations: `lib/ai_git/git.rb`
 - Ollama API: `lib/ai_git/ollama.rb`
 
-## Ruby Style
-
-- Use double quotes for strings when feasible (e.g., `"hello"` not `'hello'`)
-- Use single quotes only when the string contains interpolation or escape sequences
