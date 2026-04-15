@@ -1,6 +1,6 @@
 # AI Git
 
-AI‑powered git commit + push tool using local language models
+AI‑powered git commit + push tool using SLMs (Small Language Models)
 
 ## Usage
 
