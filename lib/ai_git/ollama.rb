@@ -24,8 +24,6 @@ Generate a commit message for the provided changes following this exact format:
 1. First line: Short title (< 72 chars, preferably < 50), starting with a verb in imperative present tense.
 2. Second line: Blank
 3. Body (from line 3): Clear explanation of the changes and their rationale.
-4. One blank line after body.
-5. Final line: AI-generated commit message by: https://github.com/kaiquekandykoga/ai_git
 
 Use conventional commit types (feat/fix/refactor/chore/etc.) when appropriate.
 Output nothing but the commit message itself. No quotes, no explanations, no markdown."""
