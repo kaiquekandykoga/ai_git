@@ -8,7 +8,7 @@ module AIGit
 
     def escape_json(string)
       string.gsub('\\', '\\\\')
-            .gsub('"', '\\"')
+            .gsub('"', '\"')
             .gsub("\n", '\\n')
             .gsub("\r", '\\r')
             .gsub("\t", '\\t')
@@ -21,7 +21,7 @@ module AIGit
                'First line: short commit title (under 72 chars). ' \
                'Second line: empty. ' \
                'Third line+: commit message body. ' \
-               'Last line: AI-generated commit message\nhttps://github.com/kaiquekandykoga/ai_git ' \
+               "Last line: AI-generated commit message by:\nhttps://github.com/kaiquekandykoga/ai_git " \
                'Output only the commit message, no explanations.'
 
       json_body = {
@@ -45,7 +45,7 @@ module AIGit
       message = data['response'].to_s
 
       message = message.gsub('\\n', "\n")
-                       .gsub('\\"', '"')
+                       .gsub('\"', '"')
 
       message = message.chomp if message.end_with?('"')
 
