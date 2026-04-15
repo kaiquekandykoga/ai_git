@@ -17,7 +17,7 @@ module AIGit
     puts 'Generating commit message...'
 
     message = AIGit::Ollama.generate_commit_message(diff)
-
+    binding.irb
     puts "Commit message: #{message}"
 
     escaped_msg = message.gsub(/[\\"`$]/) { |c| "\\#{c}" }
