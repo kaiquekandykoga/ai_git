@@ -5,13 +5,13 @@ AI-powered git commit and push tool using Ollama.
 ## Requirements
 
 - Ruby 4.0+
-- Ollama running with `llama3.2:3b` model
+- Ollama
 
 ## Setup
 
 1. Pull the Ollama model (if not already done):
    ```bash
-   ollama pull llama3.2:3b
+   ollama pull qwen:14b
    ```
 
 2. Start Ollama:

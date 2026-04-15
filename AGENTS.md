@@ -3,7 +3,7 @@
 ## Requirements
 
 - Ruby 4.0+ (required by gemspec)
-- Ollama running with `llama3.2:3b` model
+- Ollama
 
 ## Run
 
