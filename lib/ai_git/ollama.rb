@@ -22,8 +22,7 @@ module AIGit
                'Second line: empty. ' \
                'Third line+: commit message body. ' \
                'Last line: https://github.com/kaiquekandykoga/ai_git ' \
-               'Output only the commit message, no explanations. ' \
-               "Changes:\n#{diff}"
+               'Output only the commit message, no explanations.'
 
       json_body = {
         model: 'llama3.2:3b',
