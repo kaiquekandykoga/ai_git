@@ -19,6 +19,11 @@ AI-powered git commit and push tool using Ollama
    ollama serve
    ```
 
+3. Install ai_git:
+   ```bash
+   gem install ai_git
+   ```
+
 ## Run
 
 1. Stage your files:
@@ -28,7 +33,7 @@ AI-powered git commit and push tool using Ollama
 
 2. Run the app:
    ```bash
-   ./bin/ai_git
+   ai_git
    ```
 
 The app will generate a commit message using Ollama, commit your staged changes, and push to the remote.
