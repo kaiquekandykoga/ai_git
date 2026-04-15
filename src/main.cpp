@@ -3,6 +3,21 @@
 #include <iostream>
 #include <string>
 
+namespace {
+
+std::string escape_shell(const std::string& s) {
+    std::string result;
+    for (char c : s) {
+        if (c == '\\' || c == '"' || c == '`' || c == '$') {
+            result += '\\';
+        }
+        result += c;
+    }
+    return result;
+}
+
+} // namespace
+
 int main() {
     try {
         std::string staged = ai_git::git::get_staged_files();
@@ -22,8 +37,8 @@ int main() {
 
         std::cout << "Commit message: " << message << std::endl;
 
-        std::string escaped_msg = "\"" + message + "\"";
-        ai_git::git::run_command("git", "commit -m " + escaped_msg);
+        std::string escaped_msg = escape_shell(message);
+        ai_git::git::run_command("git", "commit -m \"" + escaped_msg + "\"");
         std::cout << "Committed." << std::endl;
 
         ai_git::git::run_command("git", "push");
