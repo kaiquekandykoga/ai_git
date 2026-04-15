@@ -29,7 +29,7 @@ Use conventional commit types (feat/fix/refactor/chore/etc.) when appropriate.
 Output nothing but the commit message itself. No quotes, no explanations, no markdown."""
 
       json_body = {
-        model: 'llama3.2:3b',
+        model: 'ministral-3:8b',
         prompt: prompt,
         stream: false
       }.to_json
