@@ -43,7 +43,8 @@ module AIGit
       PROMPT
 
       json_body = {
-        model: 'qwen:14b',
+        # model: 'qwen:14b',
+        model: 'ministral-3:8b',
         prompt: prompt,
         stream: false,
         # These parameters help a lot with strictness:
