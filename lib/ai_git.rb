@@ -31,6 +31,7 @@ module AIGit
       puts "\e[1mGit Pushed\e[0m"
     end
 
+    puts "\e[1mBenchmark\e[0m"
     puts result
   end
 end
