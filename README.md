@@ -1,6 +1,6 @@
 # AI Git
 
-AI‑powered Git commit + push tool using SLMs
+AI‑powered Git using SLMs
 
 ## Usage
 
