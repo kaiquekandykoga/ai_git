@@ -1,4 +1,4 @@
-name: FreeBSD CI
+name: FreeBSD 15
 
 on:
   push:
@@ -9,11 +9,11 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    name: Test on FreeBSD
+    name: test
     steps:
       - uses: actions/checkout@v6
 
-      - name: Test in FreeBSD
+      - name: rake test
         uses: vmactions/freebsd-vm@v1
         with:
           release: "15.0"
