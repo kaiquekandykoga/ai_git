@@ -6,3 +6,7 @@ require "test-unit"
 require "ai_git"
 require "ai_git/git"
 require "ai_git/version"
+
+def freebsd?
+  RbConfig::CONFIG["host_os"].downcase.include?("freebsd")
+end
