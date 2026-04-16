@@ -1,0 +1,27 @@
+name: FreeBSD CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test on FreeBSD
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Test in FreeBSD
+        uses: vmactions/freebsd-vm@v1
+        with:
+          release: "15.0"
+          usesh: true
+          prepare: |
+            pkg install -y ruby devel/ruby-gems
+            gem install bundler
+
+          run: |
+            bundle install
+            bundle exec rake test
