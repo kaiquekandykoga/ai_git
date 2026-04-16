@@ -1,4 +1,10 @@
 {
-	"$schema": "https://opencode.ai/config.json",
-	"default_agent": "plan"
+    "$schema": "https://opencode.ai/config.json",
+    "default_agent": "plan",
+    "formatter": {
+        "rubocop": {
+            "command": ["bundle", "exec", "rubocop", "-A"]
+        }
+    }
 }
+
