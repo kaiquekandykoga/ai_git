@@ -1,4 +1,6 @@
-require_relative "lib/ai_git/version"
+# frozen_string_literal: true
+
+require_relative 'lib/ai_git/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'ai_git'

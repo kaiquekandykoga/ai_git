@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'benchmark'
 require_relative 'ai_git/version'
 require_relative 'ai_git/git'
@@ -7,7 +9,7 @@ module AIGit
   module_function
 
   def run
-    model_name = ENV["AI_GIT_MODEL_NAME"] || "phi4:14b"
+    model_name = ENV['AI_GIT_MODEL_NAME'] || 'phi4:14b'
 
     staged = AIGit::Git.staged_files
     abort 'Error: No staged files. Use `git add` first.' if staged.to_s.strip.empty?

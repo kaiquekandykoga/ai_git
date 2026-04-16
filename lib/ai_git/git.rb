@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+require 'English'
 module AIGit
   module Git
     module_function
@@ -17,7 +20,7 @@ module AIGit
 
     def run_command(cmd, args)
       system("#{cmd} #{args} > /dev/null 2>&1")
-      raise "Command failed: #{cmd} #{args}" if $?.exitstatus != 0
+      raise "Command failed: #{cmd} #{args}" if $CHILD_STATUS.exitstatus != 0
     end
   end
 end
