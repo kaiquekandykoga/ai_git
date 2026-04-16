@@ -6,10 +6,11 @@ on:
     branches: [master]
 jobs:
   test:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
+        os: [ubuntu-latest, macos-latest]
         ruby-version: ['4.0']
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
       - uses: ruby/setup-ruby@v1
