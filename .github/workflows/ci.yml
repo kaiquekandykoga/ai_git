@@ -1,11 +1,9 @@
 name: CI
-
 on:
   push:
     branches: [master]
   pull_request:
     branches: [master]
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -18,8 +16,8 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: false
+      - run: bundle install
       - run: bundle exec rake test
-
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -28,4 +26,5 @@ jobs:
         with:
           ruby-version: '4.0'
           bundler-cache: false
+      - run: bundle install
       - run: bundle exec rubocop
