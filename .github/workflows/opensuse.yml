@@ -1,0 +1,43 @@
+name: openSUSE
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        opensuse:
+          - image: "registry.opensuse.org/opensuse/tumbleweed:latest"
+            name: "Tumbleweed"
+          - image: "registry.opensuse.org/opensuse/leap:15.6"
+            name: "Leap 15.6"
+        ruby-version: ['4.0']
+
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.opensuse.image }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install system dependencies
+        run: |
+          zypper --non-interactive refresh
+          zypper --non-interactive install -y \
+            gcc gcc-c++ make \
+            libopenssl-devel libyaml-devel zlib-devel \
+            readline-devel sqlite3-devel git
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby-version }}
+          bundler-cache: true   # This automatically does bundle install + caching
+
+      - name: Run tests
+        run: bundle exec rake test
