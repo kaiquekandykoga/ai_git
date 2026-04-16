@@ -19,7 +19,7 @@ jobs:
           release: "15.0"
           usesh: true
           prepare: |
-            pkg install -y ruby devel/ruby-gems
+            pkg install -y ruby devel/ruby-gems git
             gem install bundler
 
           run: |
