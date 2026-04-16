@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.files        = Dir["lib/**/*.rb", "bin/ai_git"]
   spec.executables = ["ai_git"]
   spec.requirements = []
-  spec.required_ruby_version = ">= 4.0"
+  # spec.required_ruby_version = ">= 4.0"
 
   spec.homepage = "https://github.com/kaiquekandykoga/ai_git"
 end

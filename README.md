@@ -6,7 +6,6 @@ AI‑powered Git using SLMs
 
 #### Requirements
 
-- Ruby 4.0+
 - Ollama running locally
 
 #### Install
