@@ -12,7 +12,7 @@ module AIGit
   SUBCOMMANDS = {
     "review" => AIGit::Review,
     "default" => AIGit::Default
-  }
+  }.freeze
 
   def start(args)
     command = args.first || "default"
