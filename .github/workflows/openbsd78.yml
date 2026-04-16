@@ -20,7 +20,7 @@ jobs:
           usesh: true
           mem: 4096
           prepare: |
-            pkg_add ruby ruby-gems git
+            pkg_add ruby git
             gem install bundler
 
           run: |
