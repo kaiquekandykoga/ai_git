@@ -1,6 +1,6 @@
 require_relative '../test_helper'
 
-class TestAIGitOllama < Test::Unit::TestCase
+class TestOllama < Test::Unit::TestCase
   def test_escape_json_handles_backslash
     input = 'path\\to\\file'
     assert_equal input, AIGit::Ollama.escape_json(input)

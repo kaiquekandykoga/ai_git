@@ -1,6 +1,6 @@
 require_relative '../test_helper'
 
-class TestAIGitGit < Test::Unit::TestCase
+class TestGit < Test::Unit::TestCase
   def test_version
     assert_equal '0.0.3', AIGit::VERSION
   end
