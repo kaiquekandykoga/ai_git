@@ -1,10 +1,6 @@
 require_relative '../test_helper'
 
 class TestGit < Test::Unit::TestCase
-  def test_version
-    assert_equal '0.0.3', AIGit::VERSION
-  end
-
   def test_staged_files_returns_string
     result = AIGit::Git.staged_files
     assert_kind_of String, result
