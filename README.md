@@ -16,7 +16,7 @@ gem install ai_git
 
 #### AI Model
 
-Uses `phi4:14b` by default. Override with:
+Uses `gemma4:e4b` by default. Override with:
 
 ```
 export AI_GIT_MODEL_NAME="model_name"

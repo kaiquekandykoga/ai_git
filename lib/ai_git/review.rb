@@ -123,7 +123,7 @@ module AIGit
     end
 
     def call
-      model_name = ENV["AI_GIT_MODEL_NAME"] || "phi4:14b"
+      model_name = ENV["AI_GIT_MODEL_NAME"] || "gemma4:e4b"
 
       staged = AIGit::Git.staged_files
       abort "Error: No staged files. Use `git add` first." if staged.to_s.strip.empty?

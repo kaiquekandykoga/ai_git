@@ -8,7 +8,7 @@ gem install ./ai_git-0.0.0.gem
 
 ## Development
 - Requires Ruby 4.0+ (not 3.x)
-- Requires Ollama running locally with `phi4:14b` model
+- Requires Ollama running locally with `gemma4:e4b` model
 - Override model: `export AI_GIT_MODEL_NAME="model_name"`
 - Entry point: `bin/ai_git`
 
