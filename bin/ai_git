@@ -3,4 +3,4 @@
 
 require_relative "../lib/ai_git"
 
-AIGit.start(__FILE__)
+AIGit.start(ARGV)
