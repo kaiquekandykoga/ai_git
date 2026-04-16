@@ -18,6 +18,7 @@ jobs:
         with:
           release: "15.0"
           usesh: true
+          mem: 4096
           prepare: |
             pkg install -y ruby devel/ruby-gems git
             gem install bundler
