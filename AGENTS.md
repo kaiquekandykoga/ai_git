@@ -1,39 +1,21 @@
 # AGENTS.md
 
-## Requirements
-
-- Ruby 4.0+ (required by gemspec)
-- Ollama
-
-## Run
-
+## Build & Install
 ```bash
-# 1. Stage files first
-git add <files>
-
-# 2. Run the app
-./bin/ai_git
+gem build ai_git.gemspec
+gem install ./ai_git-0.0.0.gem
 ```
-
-The app connects to `http://localhost:11434/api/generate`, generates a commit message, commits, and pushes.
 
 ## Development
+- Requires Ruby 4.0+ (not 3.x)
+- Requires Ollama running locally with `phi4:14b` model
+- Override model: `export AI_GIT_MODEL_NAME="model_name"`
+- Entry point: `bin/ai_git`
 
+## Run
 ```bash
-# Build gem
-gem build ai_git.gemspec
-
-# Install locally
-gem install ./ai_git-0.1.0.gem
-
-# Publish
-gem push ai_git-0.1.0.gem
+git add <files>
+ai_git
 ```
 
-## Architecture
-
-- Entry: `bin/ai_git`
-- Main module: `lib/ai_git.rb`
-- Git operations: `lib/ai_git/git.rb`
-- Ollama API: `lib/ai_git/ollama.rb`
-
+This stages files, generates commit message via Ollama, commits, and pushes.
