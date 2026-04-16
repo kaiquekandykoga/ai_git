@@ -1,20 +1,20 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'net/http'
-require 'json'
-require 'optparse'
+require "net/http"
+require "json"
+require "optparse"
 
 # Load the gem's version constant directly
-require_relative '../lib/ai_git/version'
+require_relative "../lib/ai_git/version"
 
-GEM_NAME = 'ai_git'
+GEM_NAME = "ai_git"
 
 options = { quiet: false }
 
 OptionParser.new do |opts|
-  opts.banner = 'Usage: bin/check_release [options]'
-  opts.on('-q', '--quiet', 'Only exit status, no output') { options[:quiet] = true }
+  opts.banner = "Usage: bin/check_release [options]"
+  opts.on("-q", "--quiet", "Only exit status, no output") { options[:quiet] = true }
 end.parse!
 
 def say(msg, quiet)
@@ -22,7 +22,7 @@ def say(msg, quiet)
 end
 
 def local_version
-  abort('AIGit::VERSION is not defined — check version.rb') unless defined?(AIGit::VERSION)
+  abort("AIGit::VERSION is not defined — check version.rb") unless defined?(AIGit::VERSION)
 
   AIGit::VERSION
 end
@@ -38,12 +38,12 @@ def fetch_rubygems_versions
     begin
       json = JSON.parse(response.body)
     rescue JSON::ParserError
-      abort('RubyGems returned invalid JSON')
+      abort("RubyGems returned invalid JSON")
     end
 
-    abort('Unexpected RubyGems API response format') unless json.is_a?(Array)
+    abort("Unexpected RubyGems API response format") unless json.is_a?(Array)
 
-    json.map { |v| v['number'] }.compact
+    json.map { |v| v["number"] }.compact
   end
 end
 
@@ -55,7 +55,7 @@ if published_versions.include?(local)
   exit 0
 else
   say("⚠ #{GEM_NAME} #{local} is NOT published on RubyGems.", options[:quiet])
-  say('Publish with:', options[:quiet])
+  say("Publish with:", options[:quiet])
   say("  gem build #{GEM_NAME}.gemspec", options[:quiet])
   say("  gem push #{GEM_NAME}-#{local}.gem", options[:quiet])
   exit 1

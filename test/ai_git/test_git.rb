@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative '../test_helper'
+require_relative "../test_helper"
 
 class TestGit < Test::Unit::TestCase
   def test_staged_files_returns_string
@@ -20,6 +20,6 @@ class TestGit < Test::Unit::TestCase
   end
 
   def test_run_command_raises_on_failure
-    assert_raises(RuntimeError) { AIGit::Git.run_command('false', '') }
+    assert_raises(RuntimeError) { AIGit::Git.run_command("false", "") }
   end
 end

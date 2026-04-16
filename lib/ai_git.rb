@@ -1,18 +1,18 @@
 # frozen_string_literal: true
 
-require 'benchmark'
-require_relative 'ai_git/version'
-require_relative 'ai_git/git'
-require_relative 'ai_git/ollama'
+require "benchmark"
+require_relative "ai_git/version"
+require_relative "ai_git/git"
+require_relative "ai_git/ollama"
 
 module AIGit
   module_function
 
   def run
-    model_name = ENV['AI_GIT_MODEL_NAME'] || 'phi4:14b'
+    model_name = ENV["AI_GIT_MODEL_NAME"] || "phi4:14b"
 
     staged = AIGit::Git.staged_files
-    abort 'Error: No staged files. Use `git add` first.' if staged.to_s.strip.empty?
+    abort "Error: No staged files. Use `git add` first." if staged.to_s.strip.empty?
 
     diff = AIGit::Git.diff
     branch = AIGit::Git.current_branch
@@ -29,10 +29,10 @@ module AIGit
       puts "\e[1mCommit Message:\e[0m\n\n#{message}\n"
 
       escaped_msg = message.gsub(/[\\"`$]/) { |c| "\\#{c}" }
-      AIGit::Git.run_command('git', "commit -m \"#{escaped_msg}\"")
+      AIGit::Git.run_command("git", "commit -m \"#{escaped_msg}\"")
       puts "\e[1mGit Commited\e[0m"
 
-      AIGit::Git.run_command('git', 'push')
+      AIGit::Git.run_command("git", "push")
       puts "\e[1mGit Pushed\e[0m"
     end
 

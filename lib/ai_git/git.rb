@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'English'
+require "English"
 module AIGit
   module Git
     module_function

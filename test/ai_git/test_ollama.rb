@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative '../test_helper'
+require_relative "../test_helper"
 
 class TestOllama < Test::Unit::TestCase
   def test_escape_json_handles_backslash

@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-require 'net/http'
-require 'uri'
-require 'json'
+require "net/http"
+require "uri"
+require "json"
 
 module AIGit
   module Ollama
     module_function
 
     def escape_json(string)
-      string.gsub('\\', '\\\\')
+      string.gsub("\\", "\\\\")
             .gsub('"', '\"')
             .gsub("\n", '\\n')
             .gsub("\r", '\\r')
@@ -17,7 +17,7 @@ module AIGit
     end
 
     def generate_commit_message(diff, model_name)
-      raise 'No staged changes to generate commit message for' if diff.to_s.strip.empty?
+      raise "No staged changes to generate commit message for" if diff.to_s.strip.empty?
 
       prompt = <<~PROMPT
         You are an expert Git commit message writer. Output ONLY the commit message — no explanations, no markdown, no backticks, no preamble.
@@ -82,27 +82,27 @@ module AIGit
         # These parameters help a lot with strictness:
         temperature: 0.3,
         top_p: 0.9,
-        stop: ["\n\n\n", '```', 'Here is', 'The commit message'],
+        stop: ["\n\n\n", "```", "Here is", "The commit message"],
         num_predict: 400 # Limit output length
       }.to_json
 
-      uri = URI('http://localhost:11434/api/generate')
+      uri = URI("http://localhost:11434/api/generate")
       request = Net::HTTP::Post.new(uri)
-      request['Content-Type'] = 'application/json'
+      request["Content-Type"] = "application/json"
       request.body = json_body
 
       response = Net::HTTP.start(uri.host, uri.port, read_timeout: 120) do |http|
         http.request(request)
       end
 
-      raise 'Failed to connect to Ollama. Is it running?' unless response.is_a?(Net::HTTPSuccess)
+      raise "Failed to connect to Ollama. Is it running?" unless response.is_a?(Net::HTTPSuccess)
 
       data = JSON.parse(response.body)
-      message = data['response'].to_s.strip
+      message = data["response"].to_s.strip
 
       # Aggressive cleaning
-      message = message.gsub(/^(Here is|The commit message is|```|json|markdown)/i, '')
-                       .gsub(/^>\s*/, '')
+      message = message.gsub(/^(Here is|The commit message is|```|json|markdown)/i, "")
+                       .gsub(/^>\s*/, "")
                        .gsub(/\\n/, "\n")
                        .strip
 
@@ -114,7 +114,7 @@ module AIGit
 
       # Ensure it has at least a title
       if message.lines.count < 1 || message.strip.empty?
-        message = 'chore: update code' # fallback
+        message = "chore: update code" # fallback
       end
 
       message

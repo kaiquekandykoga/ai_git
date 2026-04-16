@@ -1,6 +1,9 @@
 AllCops:
   SuggestExtensions: false
 
+Style/StringLiterals:
+    EnforcedStyle: double_quotes
+
 Metrics/AbcSize:
   Enabled: false
 
