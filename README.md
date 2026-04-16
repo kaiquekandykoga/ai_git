@@ -35,7 +35,7 @@ ai_git
 | Subcommand | Description |
 |------------|-------------|
 | `ai_git` | Default - generates commit message, commits, and pushes staged files |
-| `ai_git review` | Review mode (not yet implemented) |
+| `ai_git review` | Review the stagged files (not yet implemented) |
 
 ## AI Providers
 
