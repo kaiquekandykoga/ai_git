@@ -2,7 +2,6 @@
 
 require_relative "ai_git/version"
 require_relative "ai_git/git"
-require_relative "ai_git/ollama"
 require_relative "ai_git/review"
 require_relative "ai_git/default"
 
