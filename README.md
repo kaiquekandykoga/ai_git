@@ -23,6 +23,13 @@ Uses `phi4:14b` by default. Override with:
 export AI_GIT_MODEL_NAME="model_name"
 ```
 
+## Subcommands
+
+| Subcommand | Description |
+|------------|-------------|
+| `ai_git` | Default - generates commit message, commits, and pushes staged files |
+| `ai_git review` | Review mode (not yet implemented) |
+
 #### Run
 
 ```bash
