@@ -8,7 +8,7 @@ require_relative "ai_git/ollama"
 module AIGit
   module_function
 
-  def run
+  def start(args)
     model_name = ENV["AI_GIT_MODEL_NAME"] || "phi4:14b"
 
     staged = AIGit::Git.staged_files
