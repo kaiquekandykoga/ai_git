@@ -25,7 +25,7 @@ gem install ai_git
 ##### Provider Defaults
 
 | Provider | Default Model | Base URL | Reference |
-|----------|---------------|---------|___________|
+|----------|---------------|---------|-----------|
 | `jan` (default) | Jan-v3.5-4B-Q4_K_XL | http://127.0.0.1:1337 | https://jan.ai |
 | `ollama` | gemma4:e4b | http://localhost:11434 | https://ollama.com |
 
