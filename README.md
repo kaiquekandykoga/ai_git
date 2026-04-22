@@ -6,7 +6,7 @@ AI‑powered Git using SLMs
 
 #### Requirements
 
-- Ollama running locally
+- Jan AI or Ollama running locally (Jan AI is default)
 
 #### Install
 
@@ -14,12 +14,30 @@ AI‑powered Git using SLMs
 gem install ai_git
 ```
 
-#### AI Model
+#### Environment Variables
 
-Uses `gemma4:e4b` by default. Override with:
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `AI_GIT_AI_PROVIDER` | AI provider: `jan` or `ollama` | `jan` |
+| `AI_GIT_MODEL_NAME` | Model name (overrides provider default) | Provider-specific |
+| `AI_GIT_BASE_URL` | Base URL (overrides provider default) | Provider-specific |
 
-```
-export AI_GIT_MODEL_NAME="model_name"
+##### Provider Defaults
+
+| Provider | Default Model | Base URL |
+|----------|---------------|---------|
+| `jan` (default) | Jan-v3.5-4B-Q4_K_XL | http://127.0.0.1:1337 |
+| `ollama` | gemma4:e4b | http://localhost:11434 |
+
+##### Examples
+
+```bash
+# Use Jan AI (default)
+export AI_GIT_AI_PROVIDER=jan
+
+# Use Ollama with custom model
+export AI_GIT_AI_PROVIDER=ollama
+export AI_GIT_MODEL_NAME=llama3
 ```
 
 #### Run
@@ -38,11 +56,10 @@ ai_git
 
 ## AI Providers
 
-List of supported AI Providers
-
-| Provider | Reference |
-|---------|---------|
-| Ollama | https://ollama.com
+| Provider | Reference | Default Model | Default Port |
+|----------|-----------|---------------|---------------|
+| Jan (default) | https://jan.ai | Jan-v3.5-4B-Q4_K_XL | 1337 |
+| Ollama | https://ollama.com | gemma4:e4b | 11434 |
 
 
 ## Development

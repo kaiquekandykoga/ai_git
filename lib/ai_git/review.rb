@@ -84,29 +84,52 @@ module AIGit
         Now review the staged changes:
       PROMPT
 
-      json_body = {
-        model: model_name,
-        prompt: prompt,
-        stream: false,
-        temperature: 0.2,
-        top_p: 0.9,
-        stop: ["\n\n\n", "```", "Here is", "The review"],
-        num_predict: 600
-      }.to_json
+      if AIGit::Config.request_format == :ollama
+        json_body = {
+          model: model_name,
+          prompt: prompt,
+          stream: false,
+          temperature: 0.2,
+          top_p: 0.9,
+          stop: ["\n\n\n", "```", "Here is", "The review"],
+          num_predict: 600
+        }.to_json
 
-      uri = URI("http://localhost:11434/api/generate")
-      request = Net::HTTP::Post.new(uri)
-      request["Content-Type"] = "application/json"
-      request.body = json_body
+        uri = URI("#{AIGit::Config.base_url}#{AIGit::Config.endpoint}")
+        request = Net::HTTP::Post.new(uri)
+        request["Content-Type"] = "application/json"
+        request.body = json_body
 
-      response = Net::HTTP.start(uri.host, uri.port, read_timeout: 120) do |http|
-        http.request(request)
+        response = Net::HTTP.start(uri.host, uri.port, read_timeout: 120) do |http|
+          http.request(request)
+        end
+
+        raise "Failed to connect to #{AIGit::Config.provider}. Is it running?" unless response.is_a?(Net::HTTPSuccess)
+
+        data = JSON.parse(response.body)
+        review = data["response"].to_s.strip
+      else # Jan AI
+        json_body = {
+          model: model_name,
+          messages: [{ role: "user", content: prompt }],
+          stream: false,
+          temperature: 0.2
+        }.to_json
+
+        uri = URI("#{AIGit::Config.base_url}#{AIGit::Config.endpoint}")
+        request = Net::HTTP::Post.new(uri)
+        request["Content-Type"] = "application/json"
+        request.body = json_body
+
+        response = Net::HTTP.start(uri.host, uri.port, read_timeout: 120) do |http|
+          http.request(request)
+        end
+
+        raise "Failed to connect to #{AIGit::Config.provider}. Is it running?" unless response.is_a?(Net::HTTPSuccess)
+
+        data = JSON.parse(response.body)
+        review = data["choices"][0]["message"]["content"].to_s.strip
       end
-
-      raise "Failed to connect to Ollama. Is it running?" unless response.is_a?(Net::HTTPSuccess)
-
-      data = JSON.parse(response.body)
-      review = data["response"].to_s.strip
 
       review = review.gsub(/^(Here is|The review is|```|json|markdown)/i, "")
                      .gsub(/^>\s*/, "")
@@ -123,7 +146,8 @@ module AIGit
     end
 
     def call
-      model_name = ENV["AI_GIT_MODEL_NAME"] || "gemma4:e4b"
+      provider = AIGit::Config.provider
+      model_name = AIGit::Config.model_name
 
       staged = AIGit::Git.staged_files
       abort "Error: No staged files. Use `git add` first." if staged.to_s.strip.empty?
@@ -131,6 +155,7 @@ module AIGit
       diff = AIGit::Git.diff
       branch = AIGit::Git.current_branch
 
+      puts "\e[1mAI Provider:\e[0m #{provider}"
       puts "\e[1mModel Name:\e[0m #{model_name}"
       puts "\e[1mStaged Files:\e[0m #{staged}"
       puts "\e[1mBranch:\e[0m #{branch}"
