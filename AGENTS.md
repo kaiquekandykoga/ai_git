@@ -1,21 +1,25 @@
 # AGENTS.md
 
-## Build & Install
+## Run Commands
+
 ```bash
-gem build ai_git.gemspec
-gem install ./ai_git-0.0.0.gem
+bundle exec rake test    # run tests
+bundle exec rubocop     # lint
+bundle exec rubocop -A  # format
+
+gem build ai_git.gemspec  # build gem
+gem install ./ai_git-*.gem  # install locally
 ```
 
-## Development
-- Requires Ruby 4.0+ (not 3.x)
-- Requires Ollama running locally with `gemma4:e4b` model
-- Override model: `export AI_GIT_MODEL_NAME="model_name"`
-- Entry point: `bin/ai_git`
+## Notes
 
-## Run
-```bash
-git add <files>
-ai_git
-```
+- Ruby 4.0 required (see CI matrix)
+- Test framework: test-unit (not rspec/minitest)
+- Default agent: `plan` (opencode.json)
+- Requires Jan AI or Ollama running locally for full functionality
+- `bin/ai_git` is the executable entry point
 
-This stages files, generates commit message via Ollama, commits, and pushes.
+## References
+
+- `README.md` - usage and environment variables
+- `.rubocop.yml` - disabled metrics cops, double_quotes style
