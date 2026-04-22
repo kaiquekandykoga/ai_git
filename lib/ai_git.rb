@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "ai_git/version"
+require_relative "ai_git/config"
 require_relative "ai_git/git"
 require_relative "ai_git/review"
 require_relative "ai_git/default"
