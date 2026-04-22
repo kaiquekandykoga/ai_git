@@ -164,7 +164,7 @@ module AIGit
         AIGit::Git.run_command("git", "commit -m \"#{escaped_msg}\"")
         puts "\e[1mGit Commited\e[0m"
 
-        AIGit::Git.run_command("git", "push")
+        AIGit::Git.run_command("git", "push -u origin HEAD")
         puts "\e[1mGit Pushed\e[0m"
       end
 
