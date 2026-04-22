@@ -108,7 +108,7 @@ module AIGit
 
         data = JSON.parse(response.body)
         review = data["response"].to_s.strip
-      else
+      else # Jan AI
         json_body = {
           model: model_name,
           messages: [{ role: "user", content: prompt }],
