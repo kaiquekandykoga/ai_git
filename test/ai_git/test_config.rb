@@ -25,8 +25,8 @@ class TestConfig < Test::Unit::TestCase
     assert_equal "ollama", AIGit::Config.provider
   end
 
-  def test_provider_accepts_claude_grok_llama_cpp_unsloth
-    %w[claude grok llama_cpp unsloth].each do |name|
+  def test_provider_accepts_all_known_providers
+    %w[claude grok llama_cpp unsloth mlx azure openrouter mistral gemini hugging_face nvidia_nim].each do |name|
       ENV["AI_GIT_AI_PROVIDER"] = name
       assert_equal name, AIGit::Config.provider
     end
@@ -47,7 +47,14 @@ class TestConfig < Test::Unit::TestCase
       "claude" => "claude-opus-4-7",
       "grok" => "grok-4",
       "llama_cpp" => "default",
-      "unsloth" => "unsloth/gemma-3-4b-it"
+      "unsloth" => "unsloth/gemma-3-4b-it",
+      "mlx" => "mlx-community/Llama-3.2-3B-Instruct-4bit",
+      "azure" => "gpt-4o-mini",
+      "openrouter" => "openai/gpt-4o-mini",
+      "mistral" => "mistral-large-latest",
+      "gemini" => "gemini-2.0-flash",
+      "hugging_face" => "meta-llama/Llama-3.3-70B-Instruct",
+      "nvidia_nim" => "meta/llama-3.3-70b-instruct"
     }.each do |provider, model|
       ENV["AI_GIT_AI_PROVIDER"] = provider
       assert_equal model, AIGit::Config.model_name
@@ -66,7 +73,14 @@ class TestConfig < Test::Unit::TestCase
       "claude" => "https://api.anthropic.com",
       "grok" => "https://api.x.ai",
       "llama_cpp" => "http://127.0.0.1:8080",
-      "unsloth" => "http://127.0.0.1:8000"
+      "unsloth" => "http://127.0.0.1:8000",
+      "mlx" => "http://127.0.0.1:8080",
+      "azure" => "https://YOUR-RESOURCE.openai.azure.com/openai/deployments/YOUR-DEPLOYMENT",
+      "openrouter" => "https://openrouter.ai/api",
+      "mistral" => "https://api.mistral.ai",
+      "gemini" => "https://generativelanguage.googleapis.com",
+      "hugging_face" => "https://router.huggingface.co",
+      "nvidia_nim" => "https://integrate.api.nvidia.com"
     }.each do |provider, url|
       ENV["AI_GIT_AI_PROVIDER"] = provider
       assert_equal url, AIGit::Config.base_url
@@ -85,7 +99,14 @@ class TestConfig < Test::Unit::TestCase
       "claude" => :anthropic,
       "grok" => :openai,
       "llama_cpp" => :openai,
-      "unsloth" => :openai
+      "unsloth" => :openai,
+      "mlx" => :openai,
+      "azure" => :azure,
+      "openrouter" => :openai,
+      "mistral" => :openai,
+      "gemini" => :openai,
+      "hugging_face" => :openai,
+      "nvidia_nim" => :openai
     }.each do |provider, format|
       ENV["AI_GIT_AI_PROVIDER"] = provider
       assert_equal format, AIGit::Config.request_format

@@ -24,6 +24,7 @@ module AIGit
         case AIGit::Config.request_format
         when :ollama    then ollama_complete(prompt, model_name, temperature, num_predict, stop)
         when :openai    then openai_complete(prompt, model_name, temperature)
+        when :azure     then azure_complete(prompt, model_name, temperature)
         when :anthropic then anthropic_complete(prompt, model_name, temperature, num_predict, stop)
         else raise "Unsupported request_format: #{AIGit::Config.request_format}"
         end
@@ -59,6 +60,21 @@ module AIGit
       headers["Authorization"] = "Bearer #{api_key}" if api_key
 
       data = post_json(body, headers: headers)
+      data.dig("choices", 0, "message", "content").to_s
+    end
+
+    def azure_complete(prompt, model_name, temperature)
+      api_key = ENV["AI_GIT_API_KEY"] || ENV["AZURE_OPENAI_API_KEY"]
+      raise "Azure provider requires AI_GIT_API_KEY (or AZURE_OPENAI_API_KEY)" unless api_key
+
+      body = {
+        model: model_name,
+        messages: [{ role: "user", content: prompt }],
+        stream: false,
+        temperature: temperature
+      }
+
+      data = post_json(body, headers: { "api-key" => api_key })
       data.dig("choices", 0, "message", "content").to_s
     end
 

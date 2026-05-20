@@ -40,6 +40,48 @@ module AIGit
         base_url: "http://127.0.0.1:8000",
         endpoint: "/v1/chat/completions",
         request_format: :openai
+      },
+      "mlx" => {
+        default_model: "mlx-community/Llama-3.2-3B-Instruct-4bit",
+        base_url: "http://127.0.0.1:8080",
+        endpoint: "/v1/chat/completions",
+        request_format: :openai
+      },
+      "azure" => {
+        default_model: "gpt-4o-mini",
+        base_url: "https://YOUR-RESOURCE.openai.azure.com/openai/deployments/YOUR-DEPLOYMENT",
+        endpoint: "/chat/completions?api-version=2024-10-21",
+        request_format: :azure
+      },
+      "openrouter" => {
+        default_model: "openai/gpt-4o-mini",
+        base_url: "https://openrouter.ai/api",
+        endpoint: "/v1/chat/completions",
+        request_format: :openai
+      },
+      "mistral" => {
+        default_model: "mistral-large-latest",
+        base_url: "https://api.mistral.ai",
+        endpoint: "/v1/chat/completions",
+        request_format: :openai
+      },
+      "gemini" => {
+        default_model: "gemini-2.0-flash",
+        base_url: "https://generativelanguage.googleapis.com",
+        endpoint: "/v1beta/openai/chat/completions",
+        request_format: :openai
+      },
+      "hugging_face" => {
+        default_model: "meta-llama/Llama-3.3-70B-Instruct",
+        base_url: "https://router.huggingface.co",
+        endpoint: "/v1/chat/completions",
+        request_format: :openai
+      },
+      "nvidia_nim" => {
+        default_model: "meta/llama-3.3-70b-instruct",
+        base_url: "https://integrate.api.nvidia.com",
+        endpoint: "/v1/chat/completions",
+        request_format: :openai
       }
     }.freeze
 
