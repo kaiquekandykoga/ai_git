@@ -1,20 +1,58 @@
 # frozen_string_literal: true
 
 require "benchmark"
-require "net/http"
-require "uri"
-require "json"
-require_relative "version"
+
+require_relative "ai_client"
+require_relative "config"
 require_relative "git"
 
 module AIGit
   module Review
     module_function
 
+    STOP_TOKENS = ["\n\n\n", "```", "Here is", "The review"].freeze
+
     def generate_review(diff, model_name)
       raise "No staged changes to review" if diff.to_s.strip.empty?
 
-      prompt = <<~PROMPT
+      review = AIClient.complete(
+        prompt: build_prompt(diff),
+        model_name: model_name,
+        temperature: 0.2,
+        num_predict: 600,
+        stop: STOP_TOKENS
+      )
+
+      review.empty? ? "No review generated." : review
+    end
+
+    def call
+      provider = AIGit::Config.provider
+      model_name = AIGit::Config.model_name
+
+      staged = AIGit::Git.staged_files
+      abort "Error: No staged files. Use `git add` first." if staged.to_s.strip.empty?
+
+      diff = AIGit::Git.diff
+      branch = AIGit::Git.current_branch
+
+      puts "\e[1mAI Provider:\e[0m #{provider}"
+      puts "\e[1mModel Name:\e[0m #{model_name}"
+      puts "\e[1mStaged Files:\e[0m #{staged}"
+      puts "\e[1mBranch:\e[0m #{branch}"
+      puts "\e[1mAI Reviewing Changes\e[0m"
+
+      result = Benchmark.measure do
+        review = generate_review(diff, model_name)
+        puts "\e[1mCode Review:\e[0m\n\n#{review}\n"
+      end
+
+      puts "\e[1mBenchmark\e[0m"
+      puts result
+    end
+
+    def build_prompt(diff)
+      <<~PROMPT
         You are a senior software engineer conducting a thorough code review. Output ONLY the review — no explanations, no markdown preamble, no backticks, no preamble.
 
         Here are the staged changes:
@@ -83,91 +121,6 @@ module AIGit
 
         Now review the staged changes:
       PROMPT
-
-      if AIGit::Config.request_format == :ollama
-        json_body = {
-          model: model_name,
-          prompt: prompt,
-          stream: false,
-          temperature: 0.2,
-          top_p: 0.9,
-          stop: ["\n\n\n", "```", "Here is", "The review"],
-          num_predict: 600
-        }.to_json
-
-        uri = URI("#{AIGit::Config.base_url}#{AIGit::Config.endpoint}")
-        request = Net::HTTP::Post.new(uri)
-        request["Content-Type"] = "application/json"
-        request.body = json_body
-
-        response = Net::HTTP.start(uri.host, uri.port, read_timeout: 120) do |http|
-          http.request(request)
-        end
-
-        raise "Failed to connect to #{AIGit::Config.provider}. Is it running?" unless response.is_a?(Net::HTTPSuccess)
-
-        data = JSON.parse(response.body)
-        review = data["response"].to_s.strip
-      else # Jan AI
-        json_body = {
-          model: model_name,
-          messages: [{ role: "user", content: prompt }],
-          stream: false,
-          temperature: 0.2
-        }.to_json
-
-        uri = URI("#{AIGit::Config.base_url}#{AIGit::Config.endpoint}")
-        request = Net::HTTP::Post.new(uri)
-        request["Content-Type"] = "application/json"
-        request.body = json_body
-
-        response = Net::HTTP.start(uri.host, uri.port, read_timeout: 120) do |http|
-          http.request(request)
-        end
-
-        raise "Failed to connect to #{AIGit::Config.provider}. Is it running?" unless response.is_a?(Net::HTTPSuccess)
-
-        data = JSON.parse(response.body)
-        review = data["choices"][0]["message"]["content"].to_s.strip
-      end
-
-      review = review.gsub(/^(Here is|The review is|```|json|markdown)/i, "")
-                     .gsub(/^>\s*/, "")
-                     .gsub(/\\n/, "\n")
-                     .strip
-
-      lines = review.lines.map(&:strip)
-      lines.reject! { |line| line.match?(/^(Here|Output|Generated|Based on|The changes)/i) }
-
-      review = lines.join("\n").strip
-      review = "No review generated." if review.empty?
-
-      review
-    end
-
-    def call
-      provider = AIGit::Config.provider
-      model_name = AIGit::Config.model_name
-
-      staged = AIGit::Git.staged_files
-      abort "Error: No staged files. Use `git add` first." if staged.to_s.strip.empty?
-
-      diff = AIGit::Git.diff
-      branch = AIGit::Git.current_branch
-
-      puts "\e[1mAI Provider:\e[0m #{provider}"
-      puts "\e[1mModel Name:\e[0m #{model_name}"
-      puts "\e[1mStaged Files:\e[0m #{staged}"
-      puts "\e[1mBranch:\e[0m #{branch}"
-      puts "\e[1mAI Reviewing Changes\e[0m"
-
-      result = Benchmark.measure do
-        review = generate_review(diff, model_name)
-        puts "\e[1mCode Review:\e[0m\n\n#{review}\n"
-      end
-
-      puts "\e[1mBenchmark\e[0m"
-      puts result
     end
   end
 end

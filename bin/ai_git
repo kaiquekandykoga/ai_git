@@ -3,4 +3,12 @@
 
 require_relative "../lib/ai_git"
 
-AIGit.start(ARGV)
+begin
+  AIGit.start(ARGV)
+rescue Interrupt
+  warn "\nAborted."
+  exit 130
+rescue StandardError => e
+  warn "ai_git: #{e.message}"
+  exit 1
+end

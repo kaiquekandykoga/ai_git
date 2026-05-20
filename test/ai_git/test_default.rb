@@ -11,32 +11,15 @@ class TestDefault < Test::Unit::TestCase
     assert_respond_to AIGit::Default, :call
   end
 
-  def test_escape_json_handles_backslash
-    input = 'path\\to\\file'
-    assert_equal input, AIGit::Default.escape_json(input)
+  def test_generate_commit_message_rejects_empty_diff
+    assert_raises(RuntimeError) { AIGit::Default.generate_commit_message("", "model") }
+    assert_raises(RuntimeError) { AIGit::Default.generate_commit_message("   \n", "model") }
   end
 
-  def test_escape_json_handles_double_quote
-    input = 'say "hello"'
-    expected = 'say \"hello\"'
-    assert_equal expected, AIGit::Default.escape_json(input)
-  end
-
-  def test_escape_json_handles_newline
-    input = "line1\nline2"
-    expected = 'line1\\nline2'
-    assert_equal expected, AIGit::Default.escape_json(input)
-  end
-
-  def test_escape_json_handles_carriage_return
-    input = "line1\rline2"
-    expected = 'line1\\rline2'
-    assert_equal expected, AIGit::Default.escape_json(input)
-  end
-
-  def test_escape_json_handles_tab
-    input = "col1\tcol2"
-    expected = 'col1\\tcol2'
-    assert_equal expected, AIGit::Default.escape_json(input)
+  def test_build_prompt_includes_diff
+    diff = "diff --git a/foo b/foo\n+hello"
+    prompt = AIGit::Default.build_prompt(diff)
+    assert_include prompt, diff
+    assert_include prompt, "STRICT OUTPUT FORMAT"
   end
 end

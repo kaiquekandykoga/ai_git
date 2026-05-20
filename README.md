@@ -52,12 +52,16 @@ ai_git
 | Subcommand | Description |
 |------------|-------------|
 | `ai_git` | Default - generates commit message, commits, and pushes staged files |
-| `ai_git review` | Review the stagged files (experimental) |
+| `ai_git review` | Review the staged files (experimental) |
+| `ai_git --help` | Show usage |
+| `ai_git --version` | Print version |
 
 ## Development
 
 ```bash
+bundle exec rake test       # run tests
+bundle exec rubocop         # lint
+
 gem build ai_git.gemspec
-gem install ./ai_git-0.0.0.gem
-gem push ai_git-0.0.0.gem  # publish to RubyGems
+gem install ./ai_git-$(ruby -r./lib/ai_git/version -e 'print AIGit::VERSION').gem
 ```

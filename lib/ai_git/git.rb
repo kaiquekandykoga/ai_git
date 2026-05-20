@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 require "English"
+require "open3"
+require "tempfile"
+
 module AIGit
   module Git
     module_function
@@ -14,13 +17,40 @@ module AIGit
     end
 
     def current_branch
-      result = `git rev-parse --abbrev-ref HEAD`
-      result.chomp
+      `git rev-parse --abbrev-ref HEAD`.chomp
     end
 
-    def run_command(cmd, args)
-      system("#{cmd} #{args} > /dev/null 2>&1")
-      raise "Command failed: #{cmd} #{args}" if $CHILD_STATUS.exitstatus != 0
+    # Run a command with arguments as an array — no shell, so values are not
+    # interpolated or word-split. Accepts either:
+    #   run_command("git", "status")                  (single string of args)
+    #   run_command("git", "commit", "-m", message)   (variadic args, preferred)
+    def run_command(cmd, *args)
+      argv =
+        if args.length == 1 && args.first.is_a?(String)
+          args.first.split
+        else
+          args.map(&:to_s)
+        end
+
+      _stdout, stderr, status = Open3.capture3(cmd, *argv)
+
+      return if status.success?
+
+      raise "Command failed: #{cmd} #{argv.join(' ')} (exit #{status.exitstatus})#{stderr.empty? ? '' : "\n#{stderr}"}"
+    end
+
+    # Commit using a temp file so the message can contain anything (quotes,
+    # backticks, dollar signs) without shell-escaping concerns.
+    def commit_with_message(message)
+      Tempfile.create("ai_git_commit_msg") do |file|
+        file.write(message)
+        file.flush
+        run_command("git", "commit", "-F", file.path)
+      end
+    end
+
+    def push_current_branch
+      run_command("git", "push", "-u", "origin", "HEAD")
     end
   end
 end

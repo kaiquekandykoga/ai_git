@@ -18,6 +18,7 @@ gem install ./ai_git-*.gem  # install locally
 - Default agent: `plan` (opencode.json)
 - Requires Jan AI or Ollama running locally for full functionality
 - `bin/ai_git` is the executable entry point
+- HTTP requests to providers live in `lib/ai_git/ai_client.rb`; provider-specific knobs in `lib/ai_git/config.rb`
 
 ## References
 

@@ -2,6 +2,8 @@
 
 module AIGit
   module Config
+    DEFAULT_PROVIDER = "jan"
+
     PROVIDERS = {
       "jan" => {
         default_model: "Jan-v3.5-4B-Q4_K_XL",
@@ -17,28 +19,36 @@ module AIGit
       }
     }.freeze
 
-    def self.provider
-      ENV["AI_GIT_AI_PROVIDER"] || "jan"
+    module_function
+
+    def provider
+      name = ENV["AI_GIT_AI_PROVIDER"] || DEFAULT_PROVIDER
+
+      unless PROVIDERS.key?(name)
+        raise "Unknown AI_GIT_AI_PROVIDER=#{name.inspect}. Expected one of: #{PROVIDERS.keys.join(', ')}"
+      end
+
+      name
     end
 
-    def self.model_name
-      ENV["AI_GIT_MODEL_NAME"] || PROVIDERS[provider][:default_model]
+    def model_name
+      ENV["AI_GIT_MODEL_NAME"] || provider_config[:default_model]
     end
 
-    def self.base_url
-      ENV["AI_GIT_BASE_URL"] || PROVIDERS[provider][:base_url]
+    def base_url
+      ENV["AI_GIT_BASE_URL"] || provider_config[:base_url]
     end
 
-    def self.endpoint
-      PROVIDERS[provider][:endpoint]
+    def endpoint
+      provider_config[:endpoint]
     end
 
-    def self.request_format
-      PROVIDERS[provider][:request_format]
+    def request_format
+      provider_config[:request_format]
     end
 
-    def self.config
-      PROVIDERS[provider]
+    def provider_config
+      PROVIDERS.fetch(provider)
     end
   end
 end
