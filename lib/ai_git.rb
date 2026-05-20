@@ -4,15 +4,15 @@ require_relative "ai_git/version"
 require_relative "ai_git/config"
 require_relative "ai_git/ai_client"
 require_relative "ai_git/git"
-require_relative "ai_git/review"
-require_relative "ai_git/default"
+require_relative "ai_git/commands/review"
+require_relative "ai_git/commands/default"
 
 module AIGit
   module_function
 
   SUBCOMMANDS = {
-    "review" => AIGit::Review,
-    "default" => AIGit::Default
+    "review" => AIGit::Commands::Review,
+    "default" => AIGit::Commands::Default
   }.freeze
 
   HELP_FLAGS    = %w[-h --help help].freeze
