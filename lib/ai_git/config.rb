@@ -16,6 +16,30 @@ module AIGit
         base_url: "http://localhost:11434",
         endpoint: "/api/generate",
         request_format: :ollama
+      },
+      "claude" => {
+        default_model: "claude-opus-4-7",
+        base_url: "https://api.anthropic.com",
+        endpoint: "/v1/messages",
+        request_format: :anthropic
+      },
+      "grok" => {
+        default_model: "grok-4",
+        base_url: "https://api.x.ai",
+        endpoint: "/v1/chat/completions",
+        request_format: :openai
+      },
+      "llama_cpp" => {
+        default_model: "default",
+        base_url: "http://127.0.0.1:8080",
+        endpoint: "/v1/chat/completions",
+        request_format: :openai
+      },
+      "unsloth" => {
+        default_model: "unsloth/gemma-3-4b-it",
+        base_url: "http://127.0.0.1:8000",
+        endpoint: "/v1/chat/completions",
+        request_format: :openai
       }
     }.freeze
 

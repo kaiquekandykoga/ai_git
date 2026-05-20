@@ -22,8 +22,9 @@ module AIGit
     def complete(prompt:, model_name:, temperature:, num_predict:, stop:)
       response_text =
         case AIGit::Config.request_format
-        when :ollama then ollama_complete(prompt, model_name, temperature, num_predict, stop)
-        when :openai then openai_complete(prompt, model_name, temperature)
+        when :ollama    then ollama_complete(prompt, model_name, temperature, num_predict, stop)
+        when :openai    then openai_complete(prompt, model_name, temperature)
+        when :anthropic then anthropic_complete(prompt, model_name, temperature, num_predict, stop)
         else raise "Unsupported request_format: #{AIGit::Config.request_format}"
         end
 
@@ -53,22 +54,54 @@ module AIGit
         temperature: temperature
       }
 
-      data = post_json(body)
+      headers = {}
+      api_key = ENV["AI_GIT_API_KEY"]
+      headers["Authorization"] = "Bearer #{api_key}" if api_key
+
+      data = post_json(body, headers: headers)
       data.dig("choices", 0, "message", "content").to_s
     end
 
-    def post_json(body)
+    def anthropic_complete(prompt, model_name, temperature, num_predict, stop)
+      api_key = ENV["AI_GIT_API_KEY"] || ENV["ANTHROPIC_API_KEY"]
+      raise "Anthropic provider requires AI_GIT_API_KEY (or ANTHROPIC_API_KEY)" unless api_key
+
+      body = {
+        model: model_name,
+        max_tokens: num_predict || 1024,
+        temperature: temperature,
+        stop_sequences: Array(stop).compact,
+        messages: [{ role: "user", content: prompt }]
+      }
+      body.delete(:stop_sequences) if body[:stop_sequences].empty?
+
+      headers = {
+        "x-api-key" => api_key,
+        "anthropic-version" => "2023-06-01"
+      }
+
+      data = post_json(body, headers: headers)
+      data.dig("content", 0, "text").to_s
+    end
+
+    def post_json(body, headers: {})
       uri = URI("#{AIGit::Config.base_url}#{AIGit::Config.endpoint}")
       request = Net::HTTP::Post.new(uri)
       request["Content-Type"] = "application/json"
+      headers.each { |k, v| request[k] = v }
       request.body = body.to_json
 
-      response = Net::HTTP.start(uri.host, uri.port, read_timeout: READ_TIMEOUT_SECONDS) do |http|
+      response = Net::HTTP.start(
+        uri.host,
+        uri.port,
+        use_ssl: uri.scheme == "https",
+        read_timeout: READ_TIMEOUT_SECONDS
+      ) do |http|
         http.request(request)
       end
 
       unless response.is_a?(Net::HTTPSuccess)
-        raise "Failed to connect to #{AIGit::Config.provider} at #{uri}. Is it running? (HTTP #{response.code})"
+        raise "Failed to connect to #{AIGit::Config.provider} at #{uri}. Is it running? (HTTP #{response.code} #{response.body})"
       end
 
       JSON.parse(response.body)
