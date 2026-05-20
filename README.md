@@ -1,6 +1,6 @@
 # AI Git
 
-AI‑powered Git using Open Models
+AI-powered Git using LLM
 
 ## Usage
 
