@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require "benchmark"
-
 require_relative "../ai_client"
 require_relative "../config"
 require_relative "../git"
+require_relative "../options"
+require_relative "../ui"
 
 module AIGit
   module Commands
@@ -27,29 +27,39 @@ module AIGit
         review.empty? ? "No review generated." : review
       end
 
-      def call
+      def call(argv = [])
+        opts = AIGit::OptionsParser.parse(argv, command: "review")
+
         provider = AIGit::Config.provider
         model_name = AIGit::Config.model_name
 
+        AIGit::Git.stage_all if opts.all
+
         staged = AIGit::Git.staged_files
-        abort "Error: No staged files. Use `git add` first." if staged.to_s.strip.empty?
+        abort "Error: No staged files. Use `git add` first (or run with --all)." if staged.to_s.strip.empty?
 
         diff = AIGit::Git.diff
         branch = AIGit::Git.current_branch
 
-        puts "\e[1mAI Provider:\e[0m #{provider}"
-        puts "\e[1mModel Name:\e[0m #{model_name}"
-        puts "\e[1mStaged Files:\e[0m #{staged}"
-        puts "\e[1mBranch:\e[0m #{branch}"
-        puts "\e[1mAI Reviewing Changes\e[0m"
+        AIGit::UI.kv("AI Provider", provider)
+        AIGit::UI.kv("Model", model_name)
+        AIGit::UI.kv("Staged Files", staged.strip.gsub("\n", ", "))
+        AIGit::UI.kv("Branch", branch)
+        puts
 
-        result = Benchmark.measure do
-          review = generate_review(diff, model_name)
-          puts "\e[1mCode Review:\e[0m\n\n#{review}\n"
-        end
+        started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-        puts "\e[1mBenchmark\e[0m"
-        puts result
+        AIGit::UI.info(AIGit::UI.bold("Reviewing staged changes…"))
+        review = generate_review(diff, model_name)
+
+        puts
+        puts AIGit::UI.bold("Code review:")
+        puts
+        puts review
+        puts
+
+        elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - started
+        AIGit::UI.kv("Done in", format("%.1fs", elapsed))
       end
 
       def build_prompt(diff)

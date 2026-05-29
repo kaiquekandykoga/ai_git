@@ -6,8 +6,8 @@ Gem::Specification.new do |spec|
   spec.name        = "ai_git"
   spec.version     = AIGit::VERSION
   spec.summary     = "AI-powered Git commit and review using LLM"
-  spec.description = "Generate Git commit messages and review staged changes via a local AI provider " \
-                     "(Jan AI or Ollama)."
+  spec.description = "Generate Git commit messages and review staged changes via a local or hosted AI " \
+                     "provider, with an interactive confirm/edit/regenerate flow."
   spec.license     = "BSD-3-Clause"
   spec.author      = "Kaíque Kandy Koga"
 

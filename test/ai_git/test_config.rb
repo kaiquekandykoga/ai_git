@@ -7,7 +7,10 @@ class TestConfig < Test::Unit::TestCase
     @original_env = {
       "AI_GIT_AI_PROVIDER" => ENV["AI_GIT_AI_PROVIDER"],
       "AI_GIT_MODEL_NAME" => ENV["AI_GIT_MODEL_NAME"],
-      "AI_GIT_BASE_URL" => ENV["AI_GIT_BASE_URL"]
+      "AI_GIT_BASE_URL" => ENV["AI_GIT_BASE_URL"],
+      "AI_GIT_API_KEY" => ENV["AI_GIT_API_KEY"],
+      "ANTHROPIC_API_KEY" => ENV["ANTHROPIC_API_KEY"],
+      "AZURE_OPENAI_API_KEY" => ENV["AZURE_OPENAI_API_KEY"]
     }
     @original_env.each_key { |k| ENV.delete(k) }
   end
@@ -111,5 +114,49 @@ class TestConfig < Test::Unit::TestCase
       ENV["AI_GIT_AI_PROVIDER"] = provider
       assert_equal format, AIGit::Config.request_format
     end
+  end
+
+  def test_api_key_not_required_for_local_providers
+    %w[jan ollama llama_cpp unsloth mlx].each do |provider|
+      ENV["AI_GIT_AI_PROVIDER"] = provider
+      assert_false AIGit::Config.api_key_required?, "#{provider} should not require a key"
+    end
+  end
+
+  def test_api_key_required_for_hosted_providers
+    %w[claude grok azure openrouter mistral gemini hugging_face nvidia_nim].each do |provider|
+      ENV["AI_GIT_AI_PROVIDER"] = provider
+      assert_true AIGit::Config.api_key_required?, "#{provider} should require a key"
+    end
+  end
+
+  def test_api_key_prefers_generic_env
+    ENV["AI_GIT_AI_PROVIDER"] = "claude"
+    ENV["AI_GIT_API_KEY"] = "generic"
+    ENV["ANTHROPIC_API_KEY"] = "specific"
+    assert_equal "generic", AIGit::Config.api_key
+  end
+
+  def test_api_key_falls_back_to_anthropic_for_claude
+    ENV["AI_GIT_AI_PROVIDER"] = "claude"
+    ENV["ANTHROPIC_API_KEY"] = "anthropic-key"
+    assert_equal "anthropic-key", AIGit::Config.api_key
+  end
+
+  def test_api_key_falls_back_to_azure_env_for_azure
+    ENV["AI_GIT_AI_PROVIDER"] = "azure"
+    ENV["AZURE_OPENAI_API_KEY"] = "azure-key"
+    assert_equal "azure-key", AIGit::Config.api_key
+  end
+
+  def test_api_key_has_no_cross_provider_fallback
+    ENV["AI_GIT_AI_PROVIDER"] = "grok"
+    ENV["ANTHROPIC_API_KEY"] = "anthropic-key"
+    assert_nil AIGit::Config.api_key
+  end
+
+  def test_api_key_nil_when_unset
+    ENV["AI_GIT_AI_PROVIDER"] = "claude"
+    assert_nil AIGit::Config.api_key
   end
 end

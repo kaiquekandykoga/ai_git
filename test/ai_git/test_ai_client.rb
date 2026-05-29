@@ -54,4 +54,51 @@ class TestAIClient < Test::Unit::TestCase
   ensure
     original.each { |k, v| v.nil? ? ENV.delete(k) : ENV[k] = v }
   end
+
+  def test_transient_status_classification
+    [408, 425, 429, 500, 502, 503, 504].each do |code|
+      assert_true AIGit::AIClient.transient_status?(code), "#{code} should be transient"
+      assert_true AIGit::AIClient.transient_status?(code.to_s)
+    end
+    [200, 201, 400, 401, 403, 404].each do |code|
+      assert_false AIGit::AIClient.transient_status?(code), "#{code} should not be transient"
+    end
+  end
+
+  def test_retry_delay_grows_exponentially
+    assert_equal 0.5, AIGit::AIClient.retry_delay(1)
+    assert_equal 1.0, AIGit::AIClient.retry_delay(2)
+    assert_equal 2.0, AIGit::AIClient.retry_delay(3)
+  end
+
+  def test_connection_error_message_hints_local_provider
+    original = ENV["AI_GIT_AI_PROVIDER"]
+    ENV.delete("AI_GIT_AI_PROVIDER") # defaults to jan (local)
+    message = AIGit::AIClient.connection_error_message(Errno::ECONNREFUSED.new("boom"))
+    assert_match(/Cannot reach jan/, message)
+    assert_match(/after #{AIGit::AIClient::MAX_ATTEMPTS} attempts/, message)
+    assert_match(/local server running/, message)
+  ensure
+    original.nil? ? ENV.delete("AI_GIT_AI_PROVIDER") : ENV["AI_GIT_AI_PROVIDER"] = original
+  end
+
+  def test_connection_error_message_hints_hosted_provider
+    original = ENV["AI_GIT_AI_PROVIDER"]
+    ENV["AI_GIT_AI_PROVIDER"] = "claude"
+    message = AIGit::AIClient.connection_error_message(Errno::ECONNREFUSED.new("boom"))
+    assert_match(/Cannot reach claude/, message)
+    assert_match(/network connection/, message)
+  ensure
+    original.nil? ? ENV.delete("AI_GIT_AI_PROVIDER") : ENV["AI_GIT_AI_PROVIDER"] = original
+  end
+
+  def test_http_error_message_includes_status_and_hints
+    response = Struct.new(:code, :body).new("401", "unauthorized")
+    message = AIGit::AIClient.http_error_message(URI("http://example.test/v1"), response)
+    assert_match(/HTTP 401/, message)
+    assert_match(/AI_GIT_API_KEY/, message)
+
+    not_found = Struct.new(:code, :body).new("404", "missing")
+    assert_match(/model name/, AIGit::AIClient.http_error_message(URI("http://example.test/v1"), not_found))
+  end
 end

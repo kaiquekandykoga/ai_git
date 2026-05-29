@@ -11,6 +11,16 @@ module AIGit
     module_function
 
     READ_TIMEOUT_SECONDS = 120
+    OPEN_TIMEOUT_SECONDS = 10
+
+    # Transient failures worth retrying with backoff.
+    MAX_ATTEMPTS      = 3
+    RETRY_BASE_DELAY  = 0.5
+    TRANSIENT_STATUSES = [408, 425, 429, 500, 502, 503, 504].freeze
+    RETRYABLE_ERRORS = [
+      Errno::ECONNREFUSED, Errno::ECONNRESET, Errno::EPIPE,
+      Net::OpenTimeout, Net::ReadTimeout, SocketError, EOFError
+    ].freeze
 
     OUTPUT_NOISE_PREFIXES = /^(Here|Output|Generated|Based on|The changes)/i.freeze
     OUTPUT_NOISE_HEADERS  = /^(Here is|The (commit message|review) is|```|json|markdown)/i.freeze
@@ -56,7 +66,7 @@ module AIGit
       }
 
       headers = {}
-      api_key = ENV["AI_GIT_API_KEY"]
+      api_key = AIGit::Config.api_key
       headers["Authorization"] = "Bearer #{api_key}" if api_key
 
       data = post_json(body, headers: headers)
@@ -64,7 +74,7 @@ module AIGit
     end
 
     def azure_complete(prompt, model_name, temperature)
-      api_key = ENV["AI_GIT_API_KEY"] || ENV["AZURE_OPENAI_API_KEY"]
+      api_key = AIGit::Config.api_key
       raise "Azure provider requires AI_GIT_API_KEY (or AZURE_OPENAI_API_KEY)" unless api_key
 
       body = {
@@ -79,7 +89,7 @@ module AIGit
     end
 
     def anthropic_complete(prompt, model_name, temperature, num_predict, stop)
-      api_key = ENV["AI_GIT_API_KEY"] || ENV["ANTHROPIC_API_KEY"]
+      api_key = AIGit::Config.api_key
       raise "Anthropic provider requires AI_GIT_API_KEY (or ANTHROPIC_API_KEY)" unless api_key
 
       body = {
@@ -100,29 +110,83 @@ module AIGit
       data.dig("content", 0, "text").to_s
     end
 
+    def transient_status?(code)
+      TRANSIENT_STATUSES.include?(code.to_i)
+    end
+
+    def retry_delay(attempt)
+      RETRY_BASE_DELAY * (2**(attempt - 1))
+    end
+
     def post_json(body, headers: {})
       uri = URI("#{AIGit::Config.base_url}#{AIGit::Config.endpoint}")
+      attempt = 0
+
+      loop do
+        attempt += 1
+
+        begin
+          response = perform_request(uri, body, headers)
+        rescue *RETRYABLE_ERRORS => e
+          raise connection_error_message(e) if attempt >= MAX_ATTEMPTS
+
+          sleep retry_delay(attempt)
+          next
+        end
+
+        return JSON.parse(response.body) if response.is_a?(Net::HTTPSuccess)
+
+        if transient_status?(response.code) && attempt < MAX_ATTEMPTS
+          sleep retry_delay(attempt)
+          next
+        end
+
+        raise http_error_message(uri, response)
+      end
+    end
+
+    def perform_request(uri, body, headers)
       request = Net::HTTP::Post.new(uri)
       request["Content-Type"] = "application/json"
-      headers.each { |k, v| request[k] = v }
+      headers.each { |key, value| request[key] = value }
       request.body = body.to_json
 
-      response = Net::HTTP.start(
+      Net::HTTP.start(
         uri.host,
         uri.port,
         use_ssl: uri.scheme == "https",
+        open_timeout: OPEN_TIMEOUT_SECONDS,
         read_timeout: READ_TIMEOUT_SECONDS
-      ) do |http|
-        http.request(request)
-      end
+      ) { |http| http.request(request) }
+    end
 
-      unless response.is_a?(Net::HTTPSuccess)
-        raise "Failed to connect to #{AIGit::Config.provider} at #{uri}. Is it running? (HTTP #{response.code} #{response.body})"
-      end
+    def http_error_message(uri, response)
+      provider = AIGit::Config.provider
+      body = response.body.to_s.strip
+      body = "#{body[0, 500]}…" if body.length > 500
 
-      JSON.parse(response.body)
-    rescue Errno::ECONNREFUSED => e
-      raise "Cannot reach #{AIGit::Config.provider} at #{AIGit::Config.base_url}: #{e.message}"
+      hint =
+        case response.code.to_i
+        when 401, 403 then " Check AI_GIT_API_KEY."
+        when 404      then " Check the model name and base URL (see `ai_git config`)."
+        else ""
+        end
+
+      "#{provider} returned HTTP #{response.code} at #{uri}.#{hint}" \
+        "#{body.empty? ? '' : "\n#{body}"}"
+    end
+
+    def connection_error_message(error)
+      provider = AIGit::Config.provider
+      base_url = AIGit::Config.base_url
+      hint =
+        if AIGit::Config.api_key_required?
+          "Check your network connection and base URL."
+        else
+          "Is the local server running? See `ai_git config`."
+        end
+
+      "Cannot reach #{provider} at #{base_url} after #{MAX_ATTEMPTS} attempts: #{error.message}. #{hint}"
     end
 
     def sanitize(text)

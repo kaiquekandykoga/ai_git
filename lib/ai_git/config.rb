@@ -4,6 +4,9 @@ module AIGit
   module Config
     DEFAULT_PROVIDER = "jan"
 
+    # Providers that run on the user's machine and need no API key.
+    LOCAL_PROVIDERS = %w[jan ollama llama_cpp unsloth mlx].freeze
+
     PROVIDERS = {
       "jan" => {
         default_model: "Jan-v3.5-4B-Q4_K_XL",
@@ -111,6 +114,21 @@ module AIGit
 
     def request_format
       provider_config[:request_format]
+    end
+
+    # Whether the current provider needs an API key (i.e. is hosted).
+    def api_key_required?
+      !LOCAL_PROVIDERS.include?(provider)
+    end
+
+    # Resolve the API key for the current provider, honouring the generic
+    # AI_GIT_API_KEY first and then provider-specific fallbacks.
+    def api_key
+      ENV["AI_GIT_API_KEY"] ||
+        case provider
+        when "claude" then ENV["ANTHROPIC_API_KEY"]
+        when "azure"  then ENV["AZURE_OPENAI_API_KEY"]
+        end
     end
 
     def provider_config

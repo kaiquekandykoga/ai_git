@@ -31,4 +31,11 @@ class TestStart < Test::Unit::TestCase
   ensure
     $stderr = original_stderr
   end
+
+  def test_config_subcommand_prints_configuration
+    out = with_captured_stdout { AIGit.start(["config"]) }
+    assert_include out, "ai_git configuration"
+    assert_include out, "Provider:"
+    assert_include out, "API key:"
+  end
 end

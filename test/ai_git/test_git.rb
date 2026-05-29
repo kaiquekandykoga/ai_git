@@ -32,4 +32,18 @@ class TestGit < Test::Unit::TestCase
     # Single string of args is split on whitespace for backward compatibility.
     AIGit::Git.run_command("true", "a b c")
   end
+
+  def test_stage_all_is_defined
+    assert_respond_to AIGit::Git, :stage_all
+  end
+
+  def test_amend_diff_returns_string
+    # Read-only (git rev-parse + git diff --cached); never mutates the repo.
+    assert_kind_of String, AIGit::Git.amend_diff
+  end
+
+  def test_commit_with_message_accepts_amend_keyword
+    params = AIGit::Git.method(:commit_with_message).parameters
+    assert_include params, %i[key amend]
+  end
 end

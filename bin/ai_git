@@ -9,6 +9,6 @@ rescue Interrupt
   warn "\nAborted."
   exit 130
 rescue StandardError => e
-  warn "ai_git: #{e.message}"
+  AIGit::UI.error("ai_git: #{e.message}")
   exit 1
 end

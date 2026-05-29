@@ -16,6 +16,19 @@ module AIGit
       `git diff --cached`
     end
 
+    # Stage every change (new, modified, deleted) in the working tree.
+    def stage_all
+      run_command("git", "add", "-A")
+    end
+
+    # Diff that the amended commit will contain: the index compared against the
+    # previous commit's parent. Falls back to the staged diff when amending the
+    # root commit (no parent exists).
+    def amend_diff
+      `git rev-parse --verify --quiet HEAD~1`
+      $CHILD_STATUS.success? ? `git diff --cached HEAD~1` : `git diff --cached`
+    end
+
     def current_branch
       `git rev-parse --abbrev-ref HEAD`.chomp
     end
@@ -40,12 +53,16 @@ module AIGit
     end
 
     # Commit using a temp file so the message can contain anything (quotes,
-    # backticks, dollar signs) without shell-escaping concerns.
-    def commit_with_message(message)
+    # backticks, dollar signs) without shell-escaping concerns. Pass amend: true
+    # to rewrite the last commit instead of creating a new one.
+    def commit_with_message(message, amend: false)
       Tempfile.create("ai_git_commit_msg") do |file|
         file.write(message)
         file.flush
-        run_command("git", "commit", "-F", file.path)
+
+        args = ["commit", "-F", file.path]
+        args << "--amend" if amend
+        run_command("git", *args)
       end
     end
 
