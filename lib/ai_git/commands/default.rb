@@ -19,9 +19,7 @@ module AIGit
         message = AIClient.complete(
           prompt: build_prompt(diff, conventional: conventional),
           model_name: model_name,
-          temperature: temperature,
-          num_predict: 400,
-          stop: STOP_TOKENS
+          temperature: temperature
         )
 
         message = normalize_message(message)

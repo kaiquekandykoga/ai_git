@@ -19,9 +19,7 @@ module AIGit
         review = AIClient.complete(
           prompt: build_prompt(diff),
           model_name: model_name,
-          temperature: 0.2,
-          num_predict: 600,
-          stop: STOP_TOKENS
+          temperature: 0.2
         )
 
         review.empty? ? "No review generated." : review

@@ -36,6 +36,6 @@ class TestStart < Test::Unit::TestCase
     out = with_captured_stdout { AIGit.start(["config"]) }
     assert_include out, "ai_git configuration"
     assert_include out, "Provider:"
-    assert_include out, "API key:"
+    assert_include out, "llama_cpp"
   end
 end
