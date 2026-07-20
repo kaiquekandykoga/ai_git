@@ -61,9 +61,6 @@ pushes to the current branch's upstream — no prompts, no flags.
 ## Development
 
 ```bash
-bundle exec rake test       # run tests
-bundle exec rubocop         # lint
-
 gem build ai_git.gemspec
 gem install ./ai_git-$(ruby -r./lib/ai_git/version -e 'print AIGit::VERSION').gem
 ```
