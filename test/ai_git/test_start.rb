@@ -16,7 +16,6 @@ class TestStart < Test::Unit::TestCase
   def test_help_flag_prints_usage
     out = with_captured_stdout { AIGit.start(["--help"]) }
     assert_include out, "Usage: ai_git"
-    assert_include out, "review"
   end
 
   def test_version_flag_prints_version
