@@ -1,29 +1,14 @@
 # AGENTS.md
 
-## Run Commands
+## Core Directive: Extreme Token Efficiency
+Maximize cost efficiency across all LLM operations. Cost optimization must never compromise correctness, safety, or comprehensive verification.
 
-```bash
-bundle exec rake test    # run tests
-bundle exec rubocop     # lint
-bundle exec rubocop -A  # format
+## 1. Token Constraints
+* **Zero Fluff:** Do not narrate plans before tool calls. Do not summarize or celebrate after successes. Transition directly between tools.
+* **Minimalist Output:** Keep final responses brief, scannable, and direct. Prioritize bullet points over paragraphs.
+* **Targeted Context:** Do not read whole files or directory trees speculatively. Use precise tools (`Grep`, specific line ranges) to minimize input tokens.
 
-gem build ai_git.gemspec  # build gem
-gem install ./ai_git-*.gem  # install locally
-```
-
-## Notes
-
-- Ruby 4.0 required (see CI matrix)
-- Test framework: test-unit (not rspec/minitest)
-- Requires a local [llama.cpp](https://github.com/ggml-org/llama.cpp) server (`./llama-server --port 8080`); it's the only supported provider, needs no API key
-- `bin/ai_git` is the executable entry point; `AIGit.start` (in `lib/ai_git.rb`) routes subcommands and passes remaining argv to each command's `call(argv)`
-- Subcommands: `default`, `config` (registered in `lib/ai_git.rb`); `default` generates a commit message, commits, and pushes — no flags, no prompts
-- Terminal output/colors helpers in `lib/ai_git/ui.rb` (colors auto-off when not a TTY or `NO_COLOR` is set)
-- HTTP requests to the local llama.cpp server live in `lib/ai_git/ai_client.rb` (retries transient failures with exponential backoff); model/base URL/endpoint defaults in `lib/ai_git/config.rb`
-- `ai_client.rb#complete` posts a single OpenAI-format chat completions request (`openai_complete`) — no other request formats or API keys involved
-- Tests must stay non-destructive: never call `Git.commit_with_message`/`push_*` against the working repo — assert on parameters or use read-only helpers
-
-## References
-
-- `README.md` - usage and environment variables
-- `.rubocop.yml` - disabled metrics cops, double_quotes style
+## 2. Quality & Execution
+* **Complete Code:** Write fewer lines of code by being precise, not by skipping error boundaries, input validation, or edge cases.
+* **Strict Verification:** Never assume success. Run relevant test suites and linters before marking a task complete.
+* **No Ghost Fixes:** Report raw failures honestly. Fix errors directly; never mask or suppress them to save output tokens.
