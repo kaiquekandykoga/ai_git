@@ -6,8 +6,6 @@ require_relative "../ui"
 
 module AIGit
   module Commands
-    # `ai_git config` — print the resolved provider configuration so users can
-    # see exactly which provider, model, URL and key will be used.
     module Config
       module_function
 

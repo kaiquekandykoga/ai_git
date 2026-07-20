@@ -13,7 +13,6 @@ module AIGit
     READ_TIMEOUT_SECONDS = 120
     OPEN_TIMEOUT_SECONDS = 10
 
-    # Transient failures worth retrying with backoff.
     MAX_ATTEMPTS      = 3
     RETRY_BASE_DELAY  = 0.5
     TRANSIENT_STATUSES = [408, 425, 429, 500, 502, 503, 504].freeze
@@ -25,7 +24,6 @@ module AIGit
     OUTPUT_NOISE_PREFIXES = /^(Here|Output|Generated|Based on|The changes)/i.freeze
     OUTPUT_NOISE_HEADERS  = /^(Here is|The (commit message|review) is|```|json|markdown)/i.freeze
 
-    # Sends `prompt` to the local llama.cpp server and returns the cleaned text body.
     def complete(prompt:, model_name:, temperature:)
       sanitize(openai_complete(prompt, model_name, temperature))
     end

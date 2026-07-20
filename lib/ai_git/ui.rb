@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 module AIGit
-  # Terminal output helpers: ANSI colors (auto-disabled when output is not a
-  # TTY or NO_COLOR is set) and key/value lines.
   module UI
     module_function
 
@@ -10,8 +8,6 @@ module AIGit
       bold: 1, dim: 2, red: 31, green: 32, yellow: 33, blue: 34, cyan: 36, gray: 90
     }.freeze
 
-    # Colors are on only for an interactive terminal and when the user has not
-    # opted out via NO_COLOR (https://no-color.org) or AI_GIT_NO_COLOR.
     def color?
       return false if ENV["NO_COLOR"] && !ENV["NO_COLOR"].empty?
       return false if ENV["AI_GIT_NO_COLOR"] && !ENV["AI_GIT_NO_COLOR"].empty?
