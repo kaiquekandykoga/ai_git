@@ -20,7 +20,7 @@ class TestConfig < Test::Unit::TestCase
   end
 
   def test_model_name_defaults_to_default
-    assert_equal "ggml-org/gemma-4-E4B-it-GGUF", AIGit::Config.model_name
+    assert_equal "ggml-org/gemma-4-E4B-it-GGUF:Q8_0", AIGit::Config.model_name
   end
 
   def test_model_name_uses_env_override
