@@ -19,10 +19,6 @@ module AIGit
       `git rev-parse --abbrev-ref HEAD`.chomp
     end
 
-    # Run a command with arguments as an array — no shell, so values are not
-    # interpolated or word-split. Accepts either:
-    #   run_command("git", "status")                  (single string of args)
-    #   run_command("git", "commit", "-m", message)   (variadic args, preferred)
     def run_command(cmd, *args)
       argv =
         if args.length == 1 && args.first.is_a?(String)
@@ -38,8 +34,6 @@ module AIGit
       raise "Command failed: #{cmd} #{argv.join(' ')} (exit #{status.exitstatus})#{stderr.empty? ? '' : "\n#{stderr}"}"
     end
 
-    # Commit using a temp file so the message can contain anything (quotes,
-    # backticks, dollar signs) without shell-escaping concerns.
     def commit_with_message(message)
       Tempfile.create("ai_git_commit_msg") do |file|
         file.write(message)
