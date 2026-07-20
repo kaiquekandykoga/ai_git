@@ -2,7 +2,6 @@
 
 require_relative "../ai_client"
 require_relative "../config"
-require_relative "../options"
 require_relative "../ui"
 
 module AIGit
@@ -12,9 +11,7 @@ module AIGit
     module Config
       module_function
 
-      def call(argv = [])
-        AIGit::OptionsParser.parse(argv, command: "config")
-
+      def call(_argv = [])
         cfg = AIGit::Config
 
         AIGit::UI.heading("ai_git configuration")

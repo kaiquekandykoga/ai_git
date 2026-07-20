@@ -3,10 +3,8 @@
 require_relative "ai_git/version"
 require_relative "ai_git/config"
 require_relative "ai_git/ui"
-require_relative "ai_git/options"
 require_relative "ai_git/ai_client"
 require_relative "ai_git/git"
-require_relative "ai_git/commands/review"
 require_relative "ai_git/commands/default"
 require_relative "ai_git/commands/config"
 
@@ -14,7 +12,6 @@ module AIGit
   module_function
 
   SUBCOMMANDS = {
-    "review" => AIGit::Commands::Review,
     "config" => AIGit::Commands::Config,
     "default" => AIGit::Commands::Default
   }.freeze
@@ -23,20 +20,11 @@ module AIGit
   VERSION_FLAGS = %w[-v --version].freeze
 
   USAGE = <<~USAGE
-    Usage: ai_git [subcommand] [options]
+    Usage: ai_git [subcommand]
 
     Subcommands:
       (none)    Generate a commit message, commit, and push staged files
-      review    Review the staged files (experimental)
       config    Show the resolved provider configuration
-
-    Options (default command):
-      -y, --yes        Skip confirmation; commit and push
-          --no-push    Commit but do not push
-          --dry-run    Print the message only; do not commit or push
-          --amend      Amend the last commit (disables auto-push)
-          --conventional  Use Conventional Commits format (feat:/fix:/...)
-      -a, --all        Stage all changes (git add -A) before running
 
     Flags:
       -h, --help     Show this message
