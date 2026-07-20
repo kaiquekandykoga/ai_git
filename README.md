@@ -57,10 +57,3 @@ pushes to the current branch's upstream — no prompts, no flags.
 | `ai_git config` | Show the resolved provider configuration |
 | `ai_git --help` | Show usage |
 | `ai_git --version` | Print version |
-
-## Development
-
-```bash
-gem build ai_git.gemspec
-gem install ./ai_git-$(ruby -r./lib/ai_git/version -e 'print AIGit::VERSION').gem
-```
