@@ -92,20 +92,20 @@ module AIGit
 
           STRICT OUTPUT FORMAT (follow exactly):
 
-          <short imperative title, max 72 chars>
+          <short imperative title, max 72 chars, summarizing the main change>
 
           <blank line>
 
-          ## Summary
-          <2–4 bullet points covering the most important changes. Each bullet starts with a verb.>
-
-          ## Why
-          <1–3 sentences explaining the motivation or context behind the change. Omit if the reason is obvious.>
+          <body written as plain prose paragraphs, no headers, no bullet points, no tags.
+          Explain why the change is necessary and what problem it solves, how it addresses
+          the issue at a high level (do not recount line-by-line code changes, those are
+          visible in the diff), and any side effects or tradeoffs reviewers should know about.>
 
           RULES:
           - Title line: short, specific, imperative mood (e.g. "Add JWT login with refresh token support"). Avoid vague titles like "Update stuff" or "Fix bug".
-          - Summary bullets: describe WHAT changed, not HOW the code looks. Focus on behaviour and impact.
-          - Why section: explain the problem being solved or the goal being achieved. Skip if it adds no value.
+          - Body: plain prose only. No markdown headers, no bullet points, no bold/italics, no tags.
+          - Body: explain WHY the change is necessary and WHAT problem it solves, then HOW it addresses the issue at a high level. Do not describe the code line by line.
+          - Body: mention side effects or tradeoffs only if they exist and matter to a reviewer.
           - No filler phrases ("this commit", "this PR", "as per discussion").
           - No line should exceed 72 characters.
 
@@ -113,27 +113,28 @@ module AIGit
 
           Add JWT-based login with refresh token support
 
-          ## Summary
-          - Implement login endpoint with access and refresh token issuance
-          - Add token refresh route with rotation and expiry validation
-          - Protect private routes via middleware that verifies access tokens
-          - Store refresh tokens using encrypted HTTP-only cookies
+          Users were being logged out on every page reload because sessions
+          were not persisted across requests. This made the app unusable for
+          any workflow longer than a single page view.
 
-          ## Why
-          Users were being logged out on every page reload. Refresh tokens allow
-          sessions to persist securely without requiring re-authentication.
+          Introduces a login endpoint that issues short-lived access tokens
+          alongside long-lived refresh tokens, plus a refresh route that
+          rotates tokens on use. Refresh tokens are stored in encrypted
+          HTTP-only cookies so the client never handles them directly.
+
+          Adds a new middleware layer on private routes, so any route not
+          yet wired to it remains unauthenticated until migrated.
 
           ---
 
           Prevent nil crash when user preferences are missing
 
-          ## Summary
-          - Add nil guard in ReportGenerator#process before accessing preferences
-          - Fall back to system defaults when preferences object is absent
+          Reports were raising NoMethodError in production for accounts
+          created before the preferences feature shipped, since those
+          accounts have no preferences record at all.
 
-          ## Why
-          Reports were raising NoMethodError in production for users created
-          before the preferences feature shipped.
+          Falls back to system defaults whenever a user's preferences are
+          absent, so report generation no longer assumes the record exists.
 
           ---
 
