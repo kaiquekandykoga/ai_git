@@ -6,7 +6,7 @@ AI-powered Git using LLM
 
 #### Requirements
 
-- A supported provider reachable from your machine (Jan AI is default — runs locally)
+- [llama.cpp](https://github.com/ggml-org/llama.cpp) running locally (e.g. `./llama-server --port 8080`)
 
 #### Install
 
@@ -18,88 +18,25 @@ gem install ai_git
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `AI_GIT_AI_PROVIDER` | AI provider (see table below) | `jan` |
-| `AI_GIT_MODEL_NAME` | Model name (overrides provider default) | Provider-specific |
-| `AI_GIT_BASE_URL` | Base URL (overrides provider default) | Provider-specific |
-| `AI_GIT_API_KEY` | API key for hosted providers (`claude`, `grok`, `azure`, `openrouter`, `mistral`, `gemini`, `hugging_face`, `nvidia_nim`). Falls back to `ANTHROPIC_API_KEY` for `claude`, `AZURE_OPENAI_API_KEY` for `azure`. | — |
+| `AI_GIT_MODEL_NAME` | Model name | `default` |
+| `AI_GIT_BASE_URL` | Base URL of the llama.cpp server | `http://127.0.0.1:8080` |
 | `NO_COLOR` | Disable colored terminal output when set | — |
 
-Run `ai_git config` to see exactly which provider, model, URL and key are resolved from your environment.
+Run `ai_git config` to see exactly which model, URL and endpoint are resolved from your environment.
 
-##### Provider Defaults
+ai_git talks to a local [llama.cpp](https://github.com/ggml-org/llama.cpp) server over its OpenAI-compatible
+`/v1/chat/completions` endpoint. No API key is needed.
 
-| Provider | Default Model | Base URL | Reference |
-|----------|---------------|---------|-----------|
-| `jan` (default) | Jan-v3.5-4B-Q4_K_XL | http://127.0.0.1:1337 | https://jan.ai |
-| `ollama` | gemma4:e4b | http://localhost:11434 | https://ollama.com |
-| `claude` | claude-opus-4-7 | https://api.anthropic.com | https://docs.anthropic.com |
-| `grok` | grok-4 | https://api.x.ai | https://docs.x.ai |
-| `llama_cpp` | default | http://127.0.0.1:8080 | https://github.com/ggml-org/llama.cpp |
-| `unsloth` | unsloth/gemma-3-4b-it | http://127.0.0.1:8000 | https://github.com/unslothai/unsloth |
-| `mlx` | mlx-community/Llama-3.2-3B-Instruct-4bit | http://127.0.0.1:8080 | https://github.com/ml-explore/mlx-lm |
-| `azure` | gpt-4o-mini | (set via `AI_GIT_BASE_URL`) | https://learn.microsoft.com/azure/ai-services/openai |
-| `openrouter` | openai/gpt-4o-mini | https://openrouter.ai/api | https://openrouter.ai/docs |
-| `mistral` | mistral-large-latest | https://api.mistral.ai | https://docs.mistral.ai |
-| `gemini` | gemini-2.0-flash | https://generativelanguage.googleapis.com | https://ai.google.dev/gemini-api/docs/openai |
-| `hugging_face` | meta-llama/Llama-3.3-70B-Instruct | https://router.huggingface.co | https://huggingface.co/docs/inference-providers |
-| `nvidia_nim` | meta/llama-3.3-70b-instruct | https://integrate.api.nvidia.com | https://docs.nvidia.com/nim |
-
-Local providers (`jan`, `ollama`, `llama_cpp`, `unsloth`, `mlx`) require no API key. Hosted providers (`claude`, `grok`, `azure`, `openrouter`, `mistral`, `gemini`, `hugging_face`, `nvidia_nim`) need `AI_GIT_API_KEY`.
-
-For `azure`, set `AI_GIT_BASE_URL` to your deployment URL, e.g. `https://my-resource.openai.azure.com/openai/deployments/my-deployment`. Azure uses the `api-key` header rather than `Authorization: Bearer`.
-
-##### Examples
+##### Example
 
 ```bash
-# Use Jan AI (default)
-export AI_GIT_AI_PROVIDER=jan
+# Start llama.cpp's server, then run ai_git with defaults
+./llama-server --port 8080
+ai_git
 
-# Use Ollama with custom model
-export AI_GIT_AI_PROVIDER=ollama
-export AI_GIT_MODEL_NAME=llama3
-
-# Use Anthropic Claude
-export AI_GIT_AI_PROVIDER=claude
-export AI_GIT_API_KEY=sk-ant-...
-
-# Use xAI Grok
-export AI_GIT_AI_PROVIDER=grok
-export AI_GIT_API_KEY=xai-...
-
-# Use a local llama.cpp server (./llama-server --port 8080)
-export AI_GIT_AI_PROVIDER=llama_cpp
-
-# Use a local Unsloth/vLLM server on a custom port
-export AI_GIT_AI_PROVIDER=unsloth
-export AI_GIT_BASE_URL=http://127.0.0.1:8001
-
-# Use a local MLX server (mlx_lm.server --port 8080)
-export AI_GIT_AI_PROVIDER=mlx
-
-# Use Azure OpenAI
-export AI_GIT_AI_PROVIDER=azure
-export AI_GIT_BASE_URL=https://my-resource.openai.azure.com/openai/deployments/my-deployment
-export AI_GIT_API_KEY=...
-
-# Use OpenRouter
-export AI_GIT_AI_PROVIDER=openrouter
-export AI_GIT_API_KEY=sk-or-...
-
-# Use Mistral
-export AI_GIT_AI_PROVIDER=mistral
-export AI_GIT_API_KEY=...
-
-# Use Google Gemini (via OpenAI-compatible endpoint)
-export AI_GIT_AI_PROVIDER=gemini
-export AI_GIT_API_KEY=...
-
-# Use Hugging Face Inference Providers
-export AI_GIT_AI_PROVIDER=hugging_face
-export AI_GIT_API_KEY=hf_...
-
-# Use NVIDIA NIM
-export AI_GIT_AI_PROVIDER=nvidia_nim
-export AI_GIT_API_KEY=nvapi-...
+# Or point at a custom model/port
+export AI_GIT_MODEL_NAME=my-model
+export AI_GIT_BASE_URL=http://127.0.0.1:8081
 ```
 
 #### Run

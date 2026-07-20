@@ -43,10 +43,8 @@ module AIGit
       -v, --version  Print version
 
     Environment variables:
-      AI_GIT_AI_PROVIDER   Provider (default: jan). Run `ai_git config` to inspect.
-      AI_GIT_MODEL_NAME    Override provider's default model
-      AI_GIT_BASE_URL      Override provider's default base URL
-      AI_GIT_API_KEY       API key for hosted providers
+      AI_GIT_MODEL_NAME    Override the default model
+      AI_GIT_BASE_URL      Override the default base URL
       NO_COLOR             Disable colored output
   USAGE
 

@@ -55,7 +55,7 @@ class TestUI < Test::Unit::TestCase
 
   def test_kv_prints_key_and_value
     $stdout = StringIO.new
-    AIGit::UI.kv("Provider", "jan")
-    assert_equal "Provider: jan\n", $stdout.string
+    AIGit::UI.kv("Provider", "llama_cpp")
+    assert_equal "Provider: llama_cpp\n", $stdout.string
   end
 end
