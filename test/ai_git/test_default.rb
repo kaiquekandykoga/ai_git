@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "../test_helper"
+require "stringio"
 
 class TestDefault < Test::Unit::TestCase
   Default = AIGit::Commands::Default
@@ -43,5 +44,66 @@ class TestDefault < Test::Unit::TestCase
 
   def test_normalize_message_blank_input
     assert_equal "", Default.normalize_message("")
+  end
+
+  # Regression: an empty or whitespace-only model response used to be committed
+  # and pushed as "chore: update code" without telling anyone.
+  def test_generate_commit_message_raises_on_empty_model_response
+    ["", "   \n\n", nil].each do |response|
+      with_stub(AIGit::AIClient, :complete, ->(**) { response }) do
+        error = assert_raises(RuntimeError) { Default.generate_commit_message("diff", "model") }
+        assert_match(/empty commit message/, error.message)
+      end
+    end
+  end
+
+  def test_generate_commit_message_returns_normalized_message
+    with_stub(AIGit::AIClient, :complete, ->(**) { "Title\nBody" }) do
+      assert_equal "Title\n\nBody", Default.generate_commit_message("diff", "model")
+    end
+  end
+
+  def test_check_base_url_allows_loopback_silently
+    with_env("AI_GIT_BASE_URL" => "http://127.0.0.1:8080") do
+      assert_nothing_raised { Default.check_base_url!(AIGit::Options.parse([])) }
+    end
+  end
+
+  def test_check_base_url_refuses_plain_http_to_a_remote_host
+    with_env("AI_GIT_BASE_URL" => "http://models.example.test") do
+      error = assert_raises(RuntimeError) { Default.check_base_url!(AIGit::Options.parse([])) }
+      assert_match(/Refusing to send the staged diff unencrypted/, error.message)
+
+      assert_nothing_raised { Default.check_base_url!(AIGit::Options.parse(["--force"])) }
+    end
+  end
+
+  def test_check_base_url_warns_for_a_remote_https_host
+    with_env("AI_GIT_BASE_URL" => "https://models.example.test") do
+      warning = capture_stderr { Default.check_base_url!(AIGit::Options.parse([])) }
+      assert_match(%r{will be sent to https://models\.example\.test}, warning)
+    end
+  end
+
+  def test_check_secrets_blocks_risky_paths_without_force
+    capture_stderr do
+      assert_raises(RuntimeError) { Default.check_secrets!(".env\n", "+SECRET=1\n", AIGit::Options.parse([])) }
+      assert_nothing_raised do
+        Default.check_secrets!(".env\n", "+SECRET=1\n", AIGit::Options.parse(["--force"]))
+      end
+    end
+  end
+
+  def test_check_secrets_allows_ordinary_changes
+    assert_nothing_raised { Default.check_secrets!("lib/a.rb\n", "+puts 1\n", AIGit::Options.parse([])) }
+  end
+
+  def capture_stderr
+    original = $stderr
+    $stderr = StringIO.new
+    yield
+    $stderr.string
+  ensure
+    $stderr = original
   end
 end

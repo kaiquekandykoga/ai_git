@@ -3,6 +3,9 @@
 require_relative "../ai_client"
 require_relative "../config"
 require_relative "../git"
+require_relative "../options"
+require_relative "../prompt"
+require_relative "../secrets"
 require_relative "../ui"
 
 module AIGit
@@ -20,7 +23,16 @@ module AIGit
         )
 
         message = normalize_message(message)
-        message.empty? ? "chore: update code" : message
+        raise empty_response_error if message.empty?
+
+        message
+      end
+
+      # Committing a placeholder like "chore: update code" would be a lie about
+      # what the model produced, and it used to be pushed unattended.
+      def empty_response_error
+        "#{AIGit::Config.provider} returned an empty commit message. " \
+          "Check the model name and that the server is loaded (see `ai_git config`), then retry."
       end
 
       # Keep the commit body readable: collapse runs of blank lines to a single
@@ -35,39 +47,126 @@ module AIGit
         lines.join("\n").gsub(/\n{3,}/, "\n\n").strip
       end
 
-      def call(_argv = [])
-        provider = AIGit::Config.provider
-        model_name = AIGit::Config.model_name
+      def call(argv = [])
+        options = AIGit::Options.parse(argv)
+        return puts(AIGit::USAGE) if options.help?
 
         staged = AIGit::Git.staged_files
-        abort "Error: No staged files. Use `git add` first." if staged.to_s.strip.empty?
+        raise "No staged files. Use `git add` first." if staged.strip.empty?
 
+        run(staged, options)
+      end
+
+      def run(staged, options)
         diff = AIGit::Git.diff
         branch = AIGit::Git.current_branch
+        model_name = AIGit::Config.model_name
 
-        print_header(provider, model_name, staged, branch)
+        check_base_url!(options)
+        check_secrets!(staged, diff, options)
+
+        print_header(AIGit::Config.provider, model_name, staged, branch)
 
         started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        message = resolve_message(diff, model_name, options)
+        return AIGit::UI.info("Aborted. Nothing committed.") if message.nil?
 
-        AIGit::UI.info(AIGit::UI.bold("Generating commit message…"))
-        message = generate_commit_message(diff, model_name)
-        print_message(message)
+        return dry_run_summary(branch, options) if options.dry_run?
 
+        commit_and_push(message, branch, options)
+        AIGit::UI.kv("Done in", format("%.1fs", Process.clock_gettime(Process::CLOCK_MONOTONIC) - started))
+      end
+
+      # Generate, show, and let the user accept / edit / regenerate / abort.
+      # Non-interactive callers (pipes, CI) keep the unattended behaviour.
+      def resolve_message(diff, model_name, options)
+        loop do
+          AIGit::UI.info(AIGit::UI.bold("Generating commit message…"))
+          message = generate_commit_message(diff, model_name)
+          print_message(message)
+
+          return message unless confirm?(options)
+
+          case AIGit::Prompt.ask_action
+          when :accept then return message
+          when :edit then return edited_message(message)
+          when :abort then return nil
+          end
+        end
+      end
+
+      def confirm?(options)
+        !options.dry_run? && !options.assume_yes? && AIGit::Prompt.interactive?
+      end
+
+      def edited_message(message)
+        edited = normalize_message(AIGit::Prompt.edit(message))
+        raise "Aborted: the edited commit message is empty." if edited.empty?
+
+        print_message(edited)
+        edited
+      end
+
+      def commit_and_push(message, branch, options)
         AIGit::Git.commit_with_message(message)
         AIGit::UI.success("Committed.")
 
+        return AIGit::UI.info(AIGit::UI.dim("Skipped push (--no-push).")) unless options.push?
+
+        return AIGit::UI.warning("Detached HEAD: skipping push. Commit is local only.") if branch.nil?
+
         AIGit::Git.push_current_branch
         AIGit::UI.success("Pushed to origin/#{branch}.")
+      end
 
-        elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - started
-        AIGit::UI.kv("Done in", format("%.1fs", elapsed))
+      def dry_run_summary(branch, options)
+        outcome =
+          if !options.push?
+            "would commit only"
+          elsif branch.nil?
+            "would commit only (detached HEAD)"
+          else
+            "would commit and push to origin/#{branch}"
+          end
+
+        AIGit::UI.info(AIGit::UI.dim("Dry run: nothing changed, #{outcome}."))
+      end
+
+      # The whole staged diff is posted to this URL, so say so out loud when it
+      # is not this machine, and refuse to send it in the clear.
+      def check_base_url!(options)
+        return if AIGit::Config.loopback_base_url?
+
+        host = AIGit::Config.base_uri.host
+
+        if AIGit::Config.insecure_remote_base_url? && !options.force?
+          raise "Refusing to send the staged diff unencrypted to #{host} over http. " \
+                "Use https, a loopback address, or pass --force."
+        end
+
+        AIGit::UI.warning("Warning: the full staged diff will be sent to #{AIGit::Config.base_url} (not this machine).")
+      end
+
+      def check_secrets!(staged, diff, options)
+        findings = AIGit::Secrets.scan(staged, diff)
+
+        findings[:warnings].each { |finding| AIGit::UI.warning("Warning: #{finding}.") }
+
+        blocking = findings[:blocking]
+        return if blocking.empty?
+
+        blocking.each { |finding| AIGit::UI.warning("Possible secret: #{finding}.") }
+        return if options.force?
+
+        raise "Refusing to send possible secrets to #{AIGit::Config.provider}. " \
+              "Unstage these files or pass --force."
       end
 
       def print_header(provider, model_name, staged, branch)
         AIGit::UI.kv("AI Provider", provider)
         AIGit::UI.kv("Model", model_name)
         AIGit::UI.kv("Staged Files", staged.to_s.strip.gsub("\n", ", "))
-        AIGit::UI.kv("Branch", branch)
+        AIGit::UI.kv("Branch", branch || "(detached HEAD)")
         puts
       end
 
