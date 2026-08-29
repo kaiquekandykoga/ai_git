@@ -53,7 +53,6 @@ module AIGit
     Environment variables:
       AI_GIT_MODEL_NAME    Override the default model
       AI_GIT_BASE_URL      Override the default base URL
-      NO_COLOR             Disable colored output
       AI_GIT_NO_COLOR      Disable colored output
   USAGE
 

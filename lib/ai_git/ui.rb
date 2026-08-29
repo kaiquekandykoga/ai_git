@@ -5,9 +5,9 @@
 #               the terminal and the environment both allow it.
 # @exports      AIGit::UI: CODES, .color?, .paint, .bold, .dim, .kv, .heading,
 #               .info, .success, .warning, .error.
-# @sideEffects  Writes to stdout and stderr; reads NO_COLOR and AI_GIT_NO_COLOR
-#               and inspects $stdout.tty?.
-# @notes        Color is off whenever either variable holds a non-empty value
+# @sideEffects  Writes to stdout and stderr; reads AI_GIT_NO_COLOR and
+#               inspects $stdout.tty?.
+# @notes        Color is off whenever AI_GIT_NO_COLOR holds a non-empty value
 #               or stdout is not a terminal, so piped output stays plain.
 
 module AIGit
@@ -19,7 +19,6 @@ module AIGit
     }.freeze
 
     def color?
-      return false if ENV["NO_COLOR"] && !ENV["NO_COLOR"].empty?
       return false if ENV["AI_GIT_NO_COLOR"] && !ENV["AI_GIT_NO_COLOR"].empty?
 
       $stdout.tty?

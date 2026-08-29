@@ -6,8 +6,8 @@
 # @exports      Subject under test: AIGit::UI.
 # @dependencies test/test_helper: loads the library and the test framework;
 #               stringio: backs the fake terminal and captures output.
-# @sideEffects  Replaces $stdout and mutates NO_COLOR and AI_GIT_NO_COLOR,
-#               restoring all three in teardown.
+# @sideEffects  Replaces $stdout and mutates AI_GIT_NO_COLOR, restoring both
+#               in teardown.
 # @notes        A StringIO subclass answering tty? as true stands in for a
 #               terminal, since the real test stream is never one.
 
@@ -23,15 +23,12 @@ class TestUI < Test::Unit::TestCase
 
   def setup
     @original_stdout = $stdout
-    @no_color = ENV["NO_COLOR"]
     @ai_no_color = ENV["AI_GIT_NO_COLOR"]
-    ENV.delete("NO_COLOR")
     ENV.delete("AI_GIT_NO_COLOR")
   end
 
   def teardown
     $stdout = @original_stdout
-    @no_color.nil? ? ENV.delete("NO_COLOR") : ENV["NO_COLOR"] = @no_color
     @ai_no_color.nil? ? ENV.delete("AI_GIT_NO_COLOR") : ENV["AI_GIT_NO_COLOR"] = @ai_no_color
   end
 
@@ -47,7 +44,7 @@ class TestUI < Test::Unit::TestCase
 
   def test_paint_respects_no_color
     $stdout = FakeTTY.new
-    ENV["NO_COLOR"] = "1"
+    ENV["AI_GIT_NO_COLOR"] = "1"
     assert_equal "hi", AIGit::UI.paint("hi", :bold)
   end
 

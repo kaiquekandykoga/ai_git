@@ -111,8 +111,6 @@ prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`.
 
 ## P3 — Documentation
 
-- **`AI_GIT_NO_COLOR` is implemented but undocumented.** `UI.color?` honors it;
-  neither the README table nor `USAGE` mentions it.
 - **Fix the push claim.** The README says `ai_git` "pushes to the current
   branch's upstream"; the code always pushes to `origin HEAD`.
 - **Write `CHANGELOG.md`** (Keep a Changelog format), starting with the 0.1.0 →

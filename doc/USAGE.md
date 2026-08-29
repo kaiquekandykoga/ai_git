@@ -16,8 +16,7 @@ gem install ai_git
 |----------|-------------|---------|
 | `AI_GIT_MODEL_NAME` | Model name | `ggml-org/gemma-4-E4B-it-GGUF:Q8_0` |
 | `AI_GIT_BASE_URL` | Base URL of the llama.cpp server | `http://127.0.0.1:8080` |
-| `NO_COLOR` | Disable colored terminal output when set | — |
-| `AI_GIT_NO_COLOR` | Disable colored terminal output when set | — |
+| `AI_GIT_NO_COLOR` | Disable colored terminal output when set to a non-empty value | — |
 
 Run `ai_git config` to see exactly which model, URL and endpoint are resolved from your environment.
 
