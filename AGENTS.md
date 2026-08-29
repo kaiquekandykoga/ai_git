@@ -3,6 +3,14 @@
 ## Core Directive: Extreme Token Efficiency
 Maximize cost efficiency across all LLM operations. Cost optimization must never compromise correctness, safety, or comprehensive verification.
 
+## Public Repository: No Sensitive Data
+This repository is open source and ships to RubyGems as the `ai_git` gem. Every commit, tag, workflow log, and released file is world-readable, and published history cannot be taken back.
+
+* **Never commit or push secrets:** API keys, tokens, passwords, private keys, `.env` files, or credentials of any kind — including in tests, fixtures, examples, and workflow files. CI credentials belong in GitHub Actions secrets; a user's own settings belong in `~/.ai_git/config.yml`, which lives outside the repo.
+* **Never commit private material:** real staged diffs, prompts, or LLM output captured from a user's work; internal hostnames or URLs; personal data; absolute paths that expose a home directory or machine name. Write examples against invented values.
+* **Assume publication:** anything written here is public the moment it is pushed. Treat a `git push` to `master` as a publication, and the release workflow as a publication to RubyGems.
+* **If sensitive data reaches the tree:** stop, report it, and do not push. If it was already pushed, say so plainly — rotating the secret and rewriting the published history is the user's call, not a fix to apply silently.
+
 ## 1. Token Constraints
 * **Zero Fluff:** Do not narrate plans before tool calls. Do not summarize or celebrate after successes. Transition directly between tools.
 * **Minimalist Output:** Keep final responses brief, scannable, and direct. Prioritize bullet points over paragraphs.
@@ -20,7 +28,7 @@ Maximize cost efficiency across all LLM operations. Cost optimization must never
 **Required** — these and nothing else:
 * every `*.rb` under `lib/`, at any depth
 * every `*.rb` under `test/`, at any depth
-* every file under `bin/` (today `bin/ai_git` and `bin/check_release`; a file added there later is required too)
+* every file under `bin/` (today `bin/ai_git`; a file added there later is required too)
 * `Rakefile`, `Gemfile`, and `ai_git.gemspec`
 
 **Exempt — do not add a header:**

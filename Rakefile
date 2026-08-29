@@ -8,7 +8,7 @@
 #               bundler-supplied build, install, and release.
 # @dependencies rake/testtask: builds the test task over test/**/test_*.rb;
 #               bundler/gem_tasks: supplies build/install/release from the
-#               gemspec, used by the tag-triggered release workflow;
+#               gemspec, used by the release workflow;
 #               rubocop/rake_task: optional, skipped when the gem is absent.
 # @sideEffects  Defines global rake tasks; running them spawns ruby, rubocop,
 #               git, and gem subprocesses, and release pushes to RubyGems.

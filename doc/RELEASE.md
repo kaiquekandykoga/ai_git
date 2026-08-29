@@ -1,12 +1,13 @@
 # Release
 
 `ai_git` is published to [RubyGems](https://rubygems.org/gems/ai_git) by
-`.github/workflows/release.yml`, which runs on every `v*` tag. The workflow
-authenticates with [trusted publishing](https://guides.rubygems.org/trusted-publishing/):
-GitHub mints a short-lived OIDC token, RubyGems exchanges it for a single-use
-API key scoped to this gem. No API key is stored in the repository, and the
-push satisfies the `rubygems_mfa_required` flag set in `ai_git.gemspec` without
-an interactive MFA prompt.
+`.github/workflows/release.yml`, which runs on every push to `master` that
+touches `lib/ai_git/version.rb`. The workflow authenticates with
+[trusted publishing](https://guides.rubygems.org/trusted-publishing/): GitHub
+mints a short-lived OIDC token, RubyGems exchanges it for a single-use API key
+scoped to this gem. No API key is stored in the repository, and the push
+satisfies the `rubygems_mfa_required` flag set in `ai_git.gemspec` without an
+interactive MFA prompt.
 
 ## One-time setup
 
@@ -30,36 +31,39 @@ environment invalidates the publisher and the push is rejected.
 
 1. Bump `AIGit::VERSION` in `lib/ai_git/version.rb`.
 2. Commit the bump and push it to `master`.
-3. Tag and push the tag:
 
-   ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
-
-The tag must be `v` followed by the version — that is the tag name
-`rake release` looks for. Because the tag already exists when the workflow
-runs, the release task skips tagging and goes straight to the gem push.
+That is the whole procedure. The push starts the workflow, which tags and
+publishes on its own — there is no tag to create by hand.
 
 ## What the workflow does
 
-1. Checks out the tag and installs the bundle on Ruby 4.0.
-2. Fails if the tag does not match `AIGit::VERSION` — a mismatch would publish
-   the version in `version.rb`, not the one named by the tag.
-3. Runs `rake test` and `rubocop`.
-4. Runs `rubygems/release-gem@v1`, which configures the OIDC credentials, runs
+1. Checks out `master` with its full history and tags, on Ruby 4.0.
+2. Reads `AIGit::VERSION` and looks for the matching `v<version>` tag. If the
+   tag already exists the version was not bumped — the change to `version.rb`
+   was a comment or a header edit — and every later step is skipped, so the
+   run is a no-op rather than a failure.
+3. Installs the bundle, then runs `rake test` and `rubocop`. A failure here
+   stops the run before anything is tagged or published.
+4. Creates the annotated `v<version>` tag and pushes it.
+5. Runs `rubygems/release-gem@v1`, which configures the OIDC credentials, runs
    `bundle exec rake release` (build, `guard_clean`, `gem push`), attaches a
-   sigstore attestation, and waits for the version to appear on RubyGems.
+   sigstore attestation, and waits for the version to appear on RubyGems. The
+   tag from step 4 already exists, so the release task skips tagging and goes
+   straight to the gem push.
 
-A failure before step 4 publishes nothing; fix it, delete and re-push the tag.
+A failure before step 5 publishes nothing. If the run fails after the tag is
+pushed, delete the tag (`git push origin :refs/tags/v1.0.0`) and re-run the
+workflow from the Actions tab — `workflow_dispatch` is enabled for exactly
+that case.
 
 ## Verifying
 
-`bin/check_release` compares `AIGit::VERSION` against the versions published on
-RubyGems and exits non-zero when the local version is missing:
+The gem is live when the version shows up on
+[rubygems.org/gems/ai_git/versions](https://rubygems.org/gems/ai_git/versions),
+which the last step of the workflow waits for. Locally:
 
 ```bash
-bin/check_release
+gem list -r ai_git --all
 ```
 
 ## Publishing by hand

@@ -86,9 +86,10 @@ prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`.
 - **Add a `gem build` + install smoke job** so packaging breaks are caught in
   CI, not at push time.
 - **Finish the release automation setup.** `.github/workflows/release.yml`
-  publishes on a `v*` tag via RubyGems trusted publishing (OIDC); it stays inert
-  until the trusted publisher is registered on rubygems.org for this repo,
-  workflow file, and the `release` environment.
+  tags and publishes whenever a push to `master` bumps `AIGit::VERSION`, via
+  RubyGems trusted publishing (OIDC); it stays inert until the trusted
+  publisher is registered on rubygems.org for this repo, workflow file, and the
+  `release` environment.
 - **Add Dependabot** for Bundler and GitHub Actions.
 - **Add `bundler-audit`** to CI for advisory scanning.
 - **Pin action versions.** `actions/checkout` is `v7` in `ci.yml` but `v6` in

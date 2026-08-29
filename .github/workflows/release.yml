@@ -2,7 +2,9 @@ name: Release
 
 on:
   push:
-    tags: ['v*']
+    branches: [master]
+    paths: ['lib/ai_git/version.rb']
+  workflow_dispatch:
 
 jobs:
   push:
@@ -15,19 +17,44 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
+          fetch-depth: 0
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '4.0'
           bundler-cache: false
-      - run: bundle install
-      - name: Check the tag matches AIGit::VERSION
+      - name: Read AIGit::VERSION
+        id: version
         run: |
-          tag="${GITHUB_REF_NAME#v}"
-          version="$(ruby -Ilib -rai_git/version -e 'print AIGit::VERSION')"
-          if [ "$tag" != "$version" ]; then
-            echo "Tag ${GITHUB_REF_NAME} does not match AIGit::VERSION (${version})" >&2
-            exit 1
+          number="$(ruby -Ilib -rai_git/version -e 'print AIGit::VERSION')"
+          printf 'number=%s\ntag=v%s\n' "$number" "$number" >> "$GITHUB_OUTPUT"
+      - name: Check whether the version is already released
+        id: guard
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            echo "${TAG} already exists — version.rb changed without a version bump; nothing to release."
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "${TAG} does not exist yet — releasing."
+            echo "release=true" >> "$GITHUB_OUTPUT"
           fi
-      - run: bundle exec rake test
-      - run: bundle exec rubocop
-      - uses: rubygems/release-gem@v1
+      - if: steps.guard.outputs.release == 'true'
+        run: bundle install
+      - if: steps.guard.outputs.release == 'true'
+        run: bundle exec rake test
+      - if: steps.guard.outputs.release == 'true'
+        run: bundle exec rubocop
+      - name: Tag the release
+        if: steps.guard.outputs.release == 'true'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag -a "${TAG}" -m "Version ${VERSION}"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "refs/tags/${TAG}"
+      - if: steps.guard.outputs.release == 'true'
+        uses: rubygems/release-gem@v1
