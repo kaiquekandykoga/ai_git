@@ -4,62 +4,20 @@ Remaining work for taking `ai_git` from a working prototype to a gem that can be
 recommended to strangers. Ordered by priority: **P0** blocks a confident 1.0,
 **P3** is polish.
 
-Current state: 40 tests passing, RuboCop clean, CI on Ubuntu/macOS/FreeBSD,
-version 0.3.0 published on RubyGems.
+Current state: 64 tests passing, RuboCop clean, CI on Ubuntu/macOS/FreeBSD,
+version 0.3.0 published on RubyGems. The P0 correctness and safety work is
+done: `sanitize` no longer eats message bodies, git reads are checked, empty
+model responses fail loudly, and committing is gated behind a confirmation
+prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`.
 
 ---
 
-## P0 — Correctness & data-loss bugs
-
-- **`AIClient.sanitize` silently deletes valid commit body lines.**
-  `OUTPUT_NOISE_PREFIXES` rejects *any* line beginning with `Here`, `Output`,
-  `Generated`, `Based on`, or `The changes`. Verified: `"Fix parser
-  crash\n\nThe changes to the lexer were needed.\nBased on profiling, we cache
-  tokens."` sanitizes down to `"Fix parser crash"` — the entire body is
-  destroyed. Restrict stripping to the *first* line (or to a leading preamble
-  block) instead of filtering every line.
-- **`sanitize` corrupts code-like content.** `gsub(/\\n/, "\n")` rewrites a
-  literal backslash-n anywhere in the message. Verified: `"Use \\n in the format
-  string."` becomes a real line break mid-sentence. Only unescape when the whole
-  response is a single escaped line, or drop the rule.
-- **Empty model responses commit a lie.** If `choices[0].message.content` is
-  missing or the model returns whitespace, `generate_commit_message` falls back
-  to `"chore: update code"` and commits + pushes it without telling anyone. Fail
-  loudly instead, or at minimum warn and require confirmation.
-- **Git read commands ignore failure.** `Git.staged_files`, `Git.diff`, and
-  `Git.current_branch` use backticks and never inspect `$?`. Outside a git repo
-  they return `""`, and the user gets ``"Error: No staged files. Use `git add`
-  first."`` instead of "not a git repository". Route them through
-  `Open3.capture3` and raise on non-zero.
-- **Detached HEAD produces a nonsense branch name.** `current_branch` returns
-  the literal string `HEAD`; the success line then prints `Pushed to
-  origin/HEAD.` Detect and handle detached HEAD explicitly.
-- **`run_command`'s single-String arg path splits on whitespace.**
-  `args.first.split` breaks any path or value containing a space. It exists only
-  for backward compatibility and is exercised by
-  `test_run_command_legacy_string_args`. Remove it and pass argv arrays
-  everywhere.
-
-## P0 — Safety: this tool commits and pushes with no brakes
-
-- **Add a confirmation step before committing.** `ai_git` currently generates,
-  commits, and pushes in one unattended shot. Add an interactive accept / edit /
-  regenerate / abort prompt when stdin is a TTY.
-- **Add `--dry-run`** (print the message, touch nothing) — the single most
-  important flag for trust-building on first use.
-- **Add `--no-push`** so committing locally does not imply publishing.
-- **Add `--yes` / `-y`** to opt back into today's unattended behavior for
-  scripts and CI.
-- **Diff content leaves the machine unreviewed.** The full staged diff is posted
-  to `AI_GIT_BASE_URL`. That default is localhost, but the variable accepts any
-  host with no warning and no scheme check. Warn loudly when the base URL is not
-  loopback, and consider refusing plain `http://` to a non-local host.
-- **Add secret redaction (or at least a guard).** Staging a `.env`, `id_rsa`, or
-  a credentials file ships it verbatim in the prompt. Detect high-risk paths and
-  known key patterns; warn or require `--force`.
-
 ## P1 — Robustness
 
+- **Redact detected secrets instead of only refusing.** `Secrets.scan` blocks
+  the run when a `.env`, private key or token-shaped string is staged, but the
+  diff is still sent verbatim once `--force` is passed. Mask the matched values
+  in the prompt.
 - **Bound the prompt size.** The whole diff is interpolated into the prompt with
   no cap. A large refactor silently overruns the model's context and yields a
   garbage message. Truncate per-file with a clear marker, skip binary files, and
@@ -110,17 +68,13 @@ version 0.3.0 published on RubyGems.
 - **No test covers the HTTP layer.** `post_json`, `perform_request`, and the
   retry loop are entirely untested. Add a stub server (WEBrick or a `Net::HTTP`
   stub) covering success, 4xx, transient-then-success, and exhausted retries.
-- **No test covers `Commands::Default.call`** — the whole end-to-end path. Add
-  an integration test that builds a scratch repo, stages a file, stubs the
-  client, and asserts a commit lands.
-- **`test_git.rb` runs against the real working directory.** It asserts on the
-  *actual* repo's staged files and branch, so results depend on the developer's
-  uncommitted state. Run these in an isolated temp repo.
-- **Add regression tests for the two `sanitize` bugs above** before fixing them.
+- **No test covers `Commands::Default.call`** — the whole end-to-end path. The
+  guards (`check_base_url!`, `check_secrets!`) and message generation are
+  covered, but not `call` itself. Add an integration test that builds a scratch
+  repo, stages a file, stubs the client, and asserts a commit lands.
+- **No test covers the confirmation prompt.** `Prompt.ask_action` and
+  `Prompt.edit` are exercised by hand over a PTY only.
 - **Add coverage measurement** (SimpleCov) with a floor enforced in CI.
-- **Test the FreeBSD skip.** `freebsd?` disables
-  `test_current_branch_returns_string` with no explanation of why; confirm the
-  underlying issue still exists or delete the guard.
 
 ## P2 — CI/CD & release
 

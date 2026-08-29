@@ -48,6 +48,10 @@ module AIGit
       puts paint(text, :green)
     end
 
+    def warning(text)
+      warn paint(text, :yellow)
+    end
+
     def error(text)
       $stderr.puts paint(text, :red) # rubocop:disable Style/StderrPuts
     end

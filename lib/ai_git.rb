@@ -20,20 +20,28 @@ module AIGit
   VERSION_FLAGS = %w[-v --version].freeze
 
   USAGE = <<~USAGE
-    Usage: ai_git [subcommand]
+    Usage: ai_git [subcommand] [options]
 
     Subcommands:
       (none)    Generate a commit message, commit, and push staged files
       config    Show the resolved provider configuration
 
-    Flags:
+    Options:
+      -n, --dry-run  Print the generated message and change nothing
+          --no-push  Commit locally without pushing
+      -y, --yes      Skip the confirmation prompt (unattended)
+      -f, --force    Proceed despite secret or remote-server warnings
       -h, --help     Show this message
       -v, --version  Print version
+
+    On a terminal ai_git asks before committing: accept, edit, regenerate or
+    quit. Piped or scripted runs commit and push unattended.
 
     Environment variables:
       AI_GIT_MODEL_NAME    Override the default model
       AI_GIT_BASE_URL      Override the default base URL
       NO_COLOR             Disable colored output
+      AI_GIT_NO_COLOR      Disable colored output
   USAGE
 
   def start(args)
