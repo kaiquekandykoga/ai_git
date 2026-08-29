@@ -1,0 +1,26 @@
+# .github/dependabot.yml
+#
+# @purpose      Keep the workflow actions and the development bundle current by
+#               letting Dependabot open update pull requests on a schedule.
+# @dependencies .github/workflows/*.yml: the actions whose versions are tracked;
+#               Gemfile, Gemfile.lock, ai_git.gemspec: the bundle definition.
+# @sideEffects  Opens pull requests against master; CI runs on each one.
+# @notes        Gemfile.lock is committed, so bundler updates change it too.
+
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
+
+  - package-ecosystem: bundler
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      development-dependencies:
+        patterns: ['*']
