@@ -22,7 +22,8 @@ Gem::Specification.new do |spec|
   spec.license     = "BSD-3-Clause"
   spec.author      = "Kaíque Kandy Koga"
 
-  spec.files = Dir["lib/**/*.rb", "bin/ai_git", "README.md", "doc/USAGE.md", "LICENSE"]
+  spec.files = Dir["lib/**/*.rb", "bin/ai_git", "README.md", "doc/USAGE.md", "doc/RELEASE.md",
+                   "LICENSE"]
   spec.executables = ["ai_git"]
   spec.require_paths = ["lib"]
   spec.requirements = []

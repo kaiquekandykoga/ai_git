@@ -1,0 +1,33 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '4.0'
+          bundler-cache: false
+      - run: bundle install
+      - name: Check the tag matches AIGit::VERSION
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          version="$(ruby -Ilib -rai_git/version -e 'print AIGit::VERSION')"
+          if [ "$tag" != "$version" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match AIGit::VERSION (${version})" >&2
+            exit 1
+          fi
+      - run: bundle exec rake test
+      - run: bundle exec rubocop
+      - uses: rubygems/release-gem@v1
