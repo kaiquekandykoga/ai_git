@@ -21,13 +21,9 @@ module AIGit
       Net::OpenTimeout, Net::ReadTimeout, SocketError, EOFError
     ].freeze
 
-    # Preamble the model sometimes emits *before* the message. Only ever matched
-    # against the leading block — these words are perfectly legal inside a body.
     PREAMBLE_PREFIXES = /\A(here|output|generated|based\son|the\schanges|
                           the\s(commit\smessage|review)\sis|json|markdown)\b/ix.freeze
     CODE_FENCE = /\A`{3,}/.freeze
-    # A single-line response whose escaped newlines separate a subject from a
-    # body — the only shape where unescaping is safe.
     ESCAPED_MESSAGE = /\A[^\n]*\\n\\n[^\n]*\z/.freeze
 
     def complete(prompt:, model_name:, temperature:)
@@ -122,9 +118,6 @@ module AIGit
       strip_preamble(strip_code_fences(lines)).join("\n").strip
     end
 
-    # Models occasionally answer with the whole message on one line, escaping
-    # the newlines. Unescape only that shape: a bare `\n` inside prose (say, a
-    # commit about a format string) must survive untouched.
     def unescape_newlines(text)
       return text unless text.match?(ESCAPED_MESSAGE)
 
@@ -143,8 +136,6 @@ module AIGit
       lines
     end
 
-    # Drop only the leading preamble block: filtering every line destroys valid
-    # body paragraphs that happen to open with "The changes" or "Based on".
     def strip_preamble(lines)
       lines.drop_while { |line| line.strip.empty? || preamble?(line) }
     end

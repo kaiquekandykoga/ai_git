@@ -29,7 +29,6 @@ module AIGit
       capture("git", "diff", "--cached")
     end
 
-    # Returns the checked-out branch name, or nil when HEAD is detached.
     def current_branch
       ensure_repository!
       stdout, _stderr, status = Open3.capture3("git", "symbolic-ref", "--quiet", "--short", "HEAD")

@@ -41,8 +41,6 @@ module AIGit
       %w[http https].include?(uri.scheme) && !uri.host.to_s.empty?
     end
 
-    # The staged diff is posted to this host, so "is it my own machine?" is a
-    # question worth answering before any bytes leave.
     def loopback_base_url?
       base_uri.host.to_s.delete("[]").match?(LOOPBACK_HOST)
     end

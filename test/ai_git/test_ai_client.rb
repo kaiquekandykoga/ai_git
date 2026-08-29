@@ -17,15 +17,11 @@ class TestAIClient < Test::Unit::TestCase
     assert_equal "Title\n\nBody", AIGit::AIClient.sanitize('Title\n\nBody')
   end
 
-  # Regression: `gsub(/\\n/, "\n")` broke any message that mentioned a literal
-  # backslash-n, splitting the sentence in half.
   def test_sanitize_keeps_literal_backslash_n_inside_prose
     raw = "Use \\n in the format string."
     assert_equal raw, AIGit::AIClient.sanitize(raw)
   end
 
-  # Regression: noise prefixes were filtered on every line, so a body opening
-  # with "The changes" or "Based on" was deleted entirely.
   def test_sanitize_keeps_body_lines_that_start_with_noise_words
     raw = "Fix parser crash\n\nThe changes to the lexer were needed.\nBased on profiling, we cache tokens."
     assert_equal raw, AIGit::AIClient.sanitize(raw)
