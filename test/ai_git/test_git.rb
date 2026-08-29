@@ -5,8 +5,6 @@ require "fileutils"
 require "tmpdir"
 
 class TestGit < Test::Unit::TestCase
-  # Run against a scratch repo so results never depend on the developer's own
-  # staged files, branch or detached HEAD.
   def in_temp_repo
     Dir.mktmpdir("ai_git_test") do |dir|
       Dir.chdir(dir) do
@@ -66,8 +64,6 @@ class TestGit < Test::Unit::TestCase
     end
   end
 
-  # Regression: backticks ignored `$?`, so callers outside a repo saw an empty
-  # string and were told "No staged files" instead of "not a git repository".
   def test_read_commands_raise_outside_a_repository
     Dir.mktmpdir("ai_git_not_a_repo") do |dir|
       Dir.chdir(dir) do
@@ -92,8 +88,6 @@ class TestGit < Test::Unit::TestCase
     AIGit::Git.run_command("true", "ignored", "args")
   end
 
-  # Regression: a lone String argument used to be split on whitespace, breaking
-  # every path or value containing a space.
   def test_run_command_preserves_spaces_in_a_single_argument
     Dir.mktmpdir("ai_git space") do |dir|
       AIGit::Git.run_command("test", "-d", dir)

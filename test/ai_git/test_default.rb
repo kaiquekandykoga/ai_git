@@ -46,8 +46,6 @@ class TestDefault < Test::Unit::TestCase
     assert_equal "", Default.normalize_message("")
   end
 
-  # Regression: an empty or whitespace-only model response used to be committed
-  # and pushed as "chore: update code" without telling anyone.
   def test_generate_commit_message_raises_on_empty_model_response
     ["", "   \n\n", nil].each do |response|
       with_stub(AIGit::AIClient, :complete, ->(**) { response }) do

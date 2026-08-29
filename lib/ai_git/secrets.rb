@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 module AIGit
-  # Guard against shipping credentials to the model: the staged diff is sent
-  # verbatim in the prompt, so a staged `.env` or private key leaves the machine.
   module Secrets
     module_function
 
@@ -23,7 +21,6 @@ module AIGit
       "a Google API key" => /\bAIza[0-9A-Za-z_-]{35}\b/
     }.freeze
 
-    # Too noisy to block on, but worth a heads-up.
     SUSPICIOUS_ASSIGNMENT = /
       \b(api[_-]?key|secret|password|passwd|token|access[_-]?key)\b
       \s*[:=]\s*["'][^"']{8,}["']

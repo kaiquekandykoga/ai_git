@@ -4,7 +4,6 @@ require_relative "../test_helper"
 require "stringio"
 
 class TestUI < Test::Unit::TestCase
-  # StringIO that claims to be a terminal, so color logic can be exercised.
   class FakeTTY < StringIO
     def tty?
       true

@@ -28,16 +28,11 @@ module AIGit
         message
       end
 
-      # Committing a placeholder like "chore: update code" would be a lie about
-      # what the model produced, and it used to be pushed unattended.
       def empty_response_error
         "#{AIGit::Config.provider} returned an empty commit message. " \
           "Check the model name and that the server is loaded (see `ai_git config`), then retry."
       end
 
-      # Keep the commit body readable: collapse runs of blank lines to a single
-      # one and guarantee a blank line after the title so git sees a proper
-      # subject/body split (otherwise `git log --oneline` mashes them together).
       def normalize_message(message)
         text = message.to_s.gsub(/\n{3,}/, "\n\n").strip
         lines = text.lines.map(&:chomp)
@@ -77,8 +72,6 @@ module AIGit
         AIGit::UI.kv("Done in", format("%.1fs", Process.clock_gettime(Process::CLOCK_MONOTONIC) - started))
       end
 
-      # Generate, show, and let the user accept / edit / regenerate / abort.
-      # Non-interactive callers (pipes, CI) keep the unattended behaviour.
       def resolve_message(diff, model_name, options)
         loop do
           AIGit::UI.info(AIGit::UI.bold("Generating commit message…"))
@@ -132,8 +125,6 @@ module AIGit
         AIGit::UI.info(AIGit::UI.dim("Dry run: nothing changed, #{outcome}."))
       end
 
-      # The whole staged diff is posted to this URL, so say so out loud when it
-      # is not this machine, and refuse to send it in the clear.
       def check_base_url!(options)
         return if AIGit::Config.loopback_base_url?
 
