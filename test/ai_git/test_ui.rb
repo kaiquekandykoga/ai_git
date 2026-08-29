@@ -4,10 +4,11 @@
 # @purpose      Cover the output layer: when ANSI codes are emitted, when they
 #               are suppressed, and how key/value lines are formatted.
 # @exports      Subject under test: AIGit::UI.
-# @dependencies test/test_helper: loads the library and the test framework;
+# @dependencies test/test_helper: loads the library, the test framework, and
+#               with_settings;
 #               stringio: backs the fake terminal and captures output.
-# @sideEffects  Replaces $stdout and mutates AI_GIT_NO_COLOR, restoring both
-#               in teardown.
+# @sideEffects  Replaces $stdout, restored in teardown, and stubs the resolved
+#               configuration within the block that restores it.
 # @notes        A StringIO subclass answering tty? as true stands in for a
 #               terminal, since the real test stream is never one.
 
@@ -23,13 +24,10 @@ class TestUI < Test::Unit::TestCase
 
   def setup
     @original_stdout = $stdout
-    @ai_no_color = ENV["AI_GIT_NO_COLOR"]
-    ENV.delete("AI_GIT_NO_COLOR")
   end
 
   def teardown
     $stdout = @original_stdout
-    @ai_no_color.nil? ? ENV.delete("AI_GIT_NO_COLOR") : ENV["AI_GIT_NO_COLOR"] = @ai_no_color
   end
 
   def test_paint_adds_ansi_codes_for_a_terminal
@@ -44,8 +42,16 @@ class TestUI < Test::Unit::TestCase
 
   def test_paint_respects_no_color
     $stdout = FakeTTY.new
-    ENV["AI_GIT_NO_COLOR"] = "1"
-    assert_equal "hi", AIGit::UI.paint("hi", :bold)
+    with_settings("no_color" => true) do
+      assert_equal "hi", AIGit::UI.paint("hi", :bold)
+    end
+  end
+
+  def test_paint_is_plain_when_the_config_cannot_be_read
+    $stdout = FakeTTY.new
+    with_stub(AIGit::Config, :settings, -> { raise "broken config" }) do
+      assert_equal "hi", AIGit::UI.paint("hi", :bold)
+    end
   end
 
   def test_paint_with_no_styles_is_plain

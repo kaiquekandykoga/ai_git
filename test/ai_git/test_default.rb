@@ -5,9 +5,9 @@
 #               building, and the base-URL and secret guards.
 # @exports      Subject under test: AIGit::Commands::Default.
 # @dependencies test/test_helper: loads the library, the framework, with_stub,
-#               and with_env;
+#               and with_settings;
 #               stringio: captures the warnings the guards print.
-# @sideEffects  Stubs AIGit::AIClient.complete and overrides AI_GIT_BASE_URL
+# @sideEffects  Stubs AIGit::AIClient.complete and the resolved configuration
 #               within blocks that restore both afterwards.
 # @notes        The generator is always stubbed, so no test reaches the model
 #               server or the repository.
@@ -74,13 +74,13 @@ class TestDefault < Test::Unit::TestCase
   end
 
   def test_check_base_url_allows_loopback_silently
-    with_env("AI_GIT_BASE_URL" => "http://127.0.0.1:8080") do
+    with_settings("base_url" => "http://127.0.0.1:8080") do
       assert_nothing_raised { Default.check_base_url!(AIGit::Options.parse([])) }
     end
   end
 
   def test_check_base_url_refuses_plain_http_to_a_remote_host
-    with_env("AI_GIT_BASE_URL" => "http://models.example.test") do
+    with_settings("base_url" => "http://models.example.test") do
       error = assert_raises(RuntimeError) { Default.check_base_url!(AIGit::Options.parse([])) }
       assert_match(/Refusing to send the staged diff unencrypted/, error.message)
 
@@ -89,7 +89,7 @@ class TestDefault < Test::Unit::TestCase
   end
 
   def test_check_base_url_warns_for_a_remote_https_host
-    with_env("AI_GIT_BASE_URL" => "https://models.example.test") do
+    with_settings("base_url" => "https://models.example.test") do
       warning = capture_stderr { Default.check_base_url!(AIGit::Options.parse([])) }
       assert_match(%r{will be sent to https://models\.example\.test}, warning)
     end

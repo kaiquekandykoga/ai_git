@@ -4,8 +4,8 @@ Remaining work for taking `ai_git` from a working prototype to a gem that can be
 recommended to strangers. Ordered by priority: **P0** blocks a confident 1.0,
 **P3** is polish.
 
-Current state: 64 tests passing, RuboCop clean, CI on Ubuntu/macOS/FreeBSD,
-version 0.3.0 published on RubyGems. The P0 correctness and safety work is
+Current state: 79 tests passing, RuboCop clean, CI on Ubuntu/macOS/FreeBSD,
+version 1.0.0. The P0 correctness and safety work is
 done: `sanitize` no longer eats message bodies, git reads are checked, empty
 model responses fail loudly, and committing is gated behind a confirmation
 prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`.
@@ -29,8 +29,8 @@ prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`.
   upstream". Either honor the real upstream or fix the docs — and check the
   remote exists *before* spending a model call.
 - **Make timeouts configurable.** `READ_TIMEOUT_SECONDS = 120` and
-  `OPEN_TIMEOUT_SECONDS = 10` are constants; slow local hardware needs an env
-  override.
+  `OPEN_TIMEOUT_SECONDS = 10` are constants; slow local hardware needs a
+  config-file override.
 - **Add jitter to the retry backoff.** `retry_delay` is deterministic
   exponential; add jitter and honor a `Retry-After` header on 429/503.
 - **Unify the error path.** `Commands::Default` mixes `abort` (immediate exit)
@@ -54,12 +54,13 @@ prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`.
 
 ## P1 — Configuration
 
-- **Support a config file.** `~/.config/ai_git/config.yml` (or `.ai_git.yml`
-  in-repo) for model, base URL, timeouts, and push policy. Env vars stay the
-  highest-precedence override.
+- **Extend the config file.** `~/.ai_git/config.yml` now carries `model_name`,
+  `base_url` and `no_color`. Add timeouts and push policy, an in-repo
+  `.ai_git.yml` for per-project overrides, and a flag-level override for the
+  settings that need one per run.
 - **Support an API key.** `Config` has no auth concept at all. Any
-  OpenAI-compatible server behind a token is currently unusable. Read from an
-  env var; never log it, and never print it in `ai_git config`.
+  OpenAI-compatible server behind a token is currently unusable. Read it from
+  the config file; never log it, and never print it in `ai_git config`.
 - **Allow overriding the prompt template** for teams with commit conventions
   (Conventional Commits, ticket-ID prefixes, line-length rules).
 
@@ -114,7 +115,7 @@ prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`.
 - **Fix the push claim.** The README says `ai_git` "pushes to the current
   branch's upstream"; the code always pushes to `origin HEAD`.
 - **Write `CHANGELOG.md`** (Keep a Changelog format), starting with the 0.1.0 →
-  0.3.0 history.
+  1.0.0 history.
 - **Write `CONTRIBUTING.md`** — setup, `bundle exec rake`, RuboCop, how to
   propose changes.
 - **Write `SECURITY.md`** — how to report a vulnerability, and an explicit

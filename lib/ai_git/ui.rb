@@ -2,13 +2,18 @@
 # lib/ai_git/ui.rb
 #
 # @purpose      Render every line the CLI prints, adding ANSI color only when
-#               the terminal and the environment both allow it.
-# @exports      AIGit::UI: CODES, .color?, .paint, .bold, .dim, .kv, .heading,
-#               .info, .success, .warning, .error.
-# @sideEffects  Writes to stdout and stderr; reads AI_GIT_NO_COLOR and
-#               inspects $stdout.tty?.
-# @notes        Color is off whenever AI_GIT_NO_COLOR holds a non-empty value
-#               or stdout is not a terminal, so piped output stays plain.
+#               the terminal and the configuration both allow it.
+# @exports      AIGit::UI: CODES, .color?, .no_color?, .paint, .bold, .dim,
+#               .kv, .heading, .info, .success, .warning, .error.
+# @dependencies ai_git/config: supplies the no_color setting from
+#               ~/.ai_git/config.yml.
+# @sideEffects  Writes to stdout and stderr; inspects $stdout.tty?.
+# @notes        Color is off whenever the config file sets no_color or stdout
+#               is not a terminal, so piped output stays plain. A config file
+#               that fails to load also turns color off rather than raising, so
+#               that error itself can still be printed.
+
+require_relative "config"
 
 module AIGit
   module UI
@@ -19,9 +24,15 @@ module AIGit
     }.freeze
 
     def color?
-      return false if ENV["AI_GIT_NO_COLOR"] && !ENV["AI_GIT_NO_COLOR"].empty?
+      return false if no_color?
 
       $stdout.tty?
+    end
+
+    def no_color?
+      AIGit::Config.no_color?
+    rescue StandardError
+      true
     end
 
     def paint(text, *styles)

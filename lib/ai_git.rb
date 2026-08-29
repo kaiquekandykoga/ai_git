@@ -50,10 +50,13 @@ module AIGit
     On a terminal ai_git asks before committing: accept, edit, regenerate or
     quit. Piped or scripted runs commit and push unattended.
 
-    Environment variables:
-      AI_GIT_MODEL_NAME    Override the default model
-      AI_GIT_BASE_URL      Override the default base URL
-      AI_GIT_NO_COLOR      Disable colored output
+    Configuration (~/.ai_git/config.yml, or config.yaml):
+      model_name: ggml-org/gemma-4-E4B-it-GGUF:Q8_0   Model to prompt
+      base_url: http://127.0.0.1:8080                 llama.cpp server
+      no_color: true                                  Disable colored output
+
+    Run `ai_git config` to see the resolved settings and the file they
+    come from.
   USAGE
 
   def start(args)

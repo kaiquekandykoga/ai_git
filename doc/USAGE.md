@@ -10,15 +10,30 @@
 gem install ai_git
 ```
 
-## Environment Variables
+## Configuration
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `AI_GIT_MODEL_NAME` | Model name | `ggml-org/gemma-4-E4B-it-GGUF:Q8_0` |
-| `AI_GIT_BASE_URL` | Base URL of the llama.cpp server | `http://127.0.0.1:8080` |
-| `AI_GIT_NO_COLOR` | Disable colored terminal output when set to a non-empty value | — |
+Settings live in a YAML file at `~/.ai_git/config.yml` (`config.yaml` is read
+too). The file is optional — without it every setting falls back to its
+default.
 
-Run `ai_git config` to see exactly which model, URL and endpoint are resolved from your environment.
+```yaml
+# ~/.ai_git/config.yml
+model_name: ggml-org/gemma-4-E4B-it-GGUF:Q8_0
+base_url: http://127.0.0.1:8080
+no_color: false
+```
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `model_name` | Model name | `ggml-org/gemma-4-E4B-it-GGUF:Q8_0` |
+| `base_url` | Base URL of the llama.cpp server | `http://127.0.0.1:8080` |
+| `no_color` | Disable colored terminal output | `false` |
+
+An unknown key or a malformed value fails the run with an error naming the
+file, so a typo never silently leaves the default in place.
+
+Run `ai_git config` to see exactly which model, URL and endpoint are resolved,
+and which file they came from.
 
 ai_git talks to a local [llama.cpp](https://github.com/ggml-org/llama.cpp) server over its OpenAI-compatible
 `/v1/chat/completions` endpoint. No API key is needed.
@@ -31,8 +46,11 @@ ai_git talks to a local [llama.cpp](https://github.com/ggml-org/llama.cpp) serve
 ai_git
 
 # Or point at a custom model/port
-export AI_GIT_MODEL_NAME=my-model
-export AI_GIT_BASE_URL=http://127.0.0.1:8081
+mkdir -p ~/.ai_git
+cat > ~/.ai_git/config.yml <<'YAML'
+model_name: my-model
+base_url: http://127.0.0.1:8081
+YAML
 ```
 
 ## Run
@@ -68,9 +86,9 @@ ai_git --no-push     # commit locally, publish later yourself
 
 ## Privacy
 
-The **full staged diff is sent to `AI_GIT_BASE_URL`** as part of the prompt. The
-default is your own machine (`http://127.0.0.1:8080`), and nothing leaves it.
-Point `AI_GIT_BASE_URL` at another host and ai_git warns before every run;
+The **full staged diff is sent to the configured `base_url`** as part of the
+prompt. The default is your own machine (`http://127.0.0.1:8080`), and nothing
+leaves it. Point `base_url` at another host and ai_git warns before every run;
 plain `http://` to a non-loopback host is refused outright unless you pass
 `--force`.
 
