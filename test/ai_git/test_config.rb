@@ -1,4 +1,12 @@
 # frozen_string_literal: true
+# test/ai_git/test_config.rb
+#
+# @purpose      Cover the resolution of provider settings from the defaults and
+#               from the environment overrides.
+# @exports      Subject under test: AIGit::Config.
+# @dependencies test/test_helper: loads the library and the test framework.
+# @sideEffects  Sets and deletes AI_GIT_MODEL_NAME and AI_GIT_BASE_URL, saving
+#               and restoring the originals in setup and teardown.
 
 require_relative "../test_helper"
 

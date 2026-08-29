@@ -1,4 +1,17 @@
 # frozen_string_literal: true
+# lib/ai_git/config.rb
+#
+# @purpose      Resolve the model provider settings from defaults and the
+#               environment, and judge whether the base URL is safe to send to.
+# @exports      AIGit::Config: PROVIDER, DEFAULT_MODEL, DEFAULT_BASE_URL,
+#               ENDPOINT, LOOPBACK_HOST, .provider, .model_name, .base_url,
+#               .endpoint, .base_uri, .valid_uri?, .loopback_base_url?,
+#               .insecure_remote_base_url?.
+# @dependencies uri: parses and validates AI_GIT_BASE_URL.
+# @sideEffects  Reads AI_GIT_MODEL_NAME and AI_GIT_BASE_URL from the
+#               environment; .base_uri raises a string on a malformed URL.
+# @notes        Only a loopback host keeps the diff on this machine, so every
+#               other host counts as remote for the plain-http refusal.
 
 require "uri"
 

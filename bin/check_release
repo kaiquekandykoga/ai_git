@@ -1,5 +1,19 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
+# bin/check_release
+#
+# @purpose      Release preflight: compare AIGit::VERSION against the versions
+#               published on RubyGems and report whether a push is needed.
+# @exports      check_release: GEM_NAME, RUBYGEMS_TIMEOUT, the -q/--quiet and
+#               -h/--help flags; exits 0 when published, 1 when not.
+# @dependencies lib/ai_git/version: supplies the local version to compare;
+#               json: parses the RubyGems API response;
+#               net/http: fetches the versions endpoint over TLS;
+#               optparse: parses the command-line flags.
+# @sideEffects  Makes an HTTPS request to rubygems.org; writes to stdout; exits
+#               0 or 1, and aborts on a fetch, format, or parse failure.
+# @notes        The check runs at load time as a top-level script, so requiring
+#               this file performs the request rather than defining a command.
 
 require "json"
 require "net/http"

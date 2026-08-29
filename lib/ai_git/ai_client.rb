@@ -1,4 +1,22 @@
 # frozen_string_literal: true
+# lib/ai_git/ai_client.rb
+#
+# @purpose      Talk to the OpenAI-compatible chat endpoint: post the prompt,
+#               retry transient failures, and strip the model's wrapping from
+#               the reply.
+# @exports      AIGit::AIClient: READ_TIMEOUT_SECONDS, OPEN_TIMEOUT_SECONDS,
+#               MAX_ATTEMPTS, RETRY_BASE_DELAY, TRANSIENT_STATUSES,
+#               RETRYABLE_ERRORS, .complete, .sanitize.
+# @dependencies ai_git/config: supplies the base URL, endpoint, and provider
+#               name used in requests and error messages;
+#               json: encodes the request body and parses the response;
+#               net/http, uri: perform the HTTP POST.
+# @sideEffects  Makes network requests to the configured base URL; sleeps
+#               between retries; raises a string message on failure.
+# @notes        Retries with exponential backoff on the listed connection
+#               errors and status codes only; any other status raises at once.
+#               Sanitizing also unescapes a reply whose only newlines are
+#               literal backslash-n, which some models emit.
 
 require "json"
 require "net/http"

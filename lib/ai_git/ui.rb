@@ -1,4 +1,14 @@
 # frozen_string_literal: true
+# lib/ai_git/ui.rb
+#
+# @purpose      Render every line the CLI prints, adding ANSI color only when
+#               the terminal and the environment both allow it.
+# @exports      AIGit::UI: CODES, .color?, .paint, .bold, .dim, .kv, .heading,
+#               .info, .success, .warning, .error.
+# @sideEffects  Writes to stdout and stderr; reads NO_COLOR and AI_GIT_NO_COLOR
+#               and inspects $stdout.tty?.
+# @notes        Color is off whenever either variable holds a non-empty value
+#               or stdout is not a terminal, so piped output stays plain.
 
 module AIGit
   module UI

@@ -1,4 +1,15 @@
 # frozen_string_literal: true
+# ai_git.gemspec
+#
+# @purpose      Describe the ai_git gem for packaging: its metadata, the files
+#               that ship, and the executable RubyGems installs.
+# @exports      Gem::Specification for "ai_git": name, version, summary,
+#               description, license, author, files, executables,
+#               require_paths, requirements, homepage, metadata.
+# @dependencies lib/ai_git/version: supplies AIGit::VERSION as the gem version.
+# @sideEffects  None.
+# @notes        `files` is an explicit Dir glob rather than a git listing, so a
+#               new top-level path ships only once it is added here.
 
 require_relative "lib/ai_git/version"
 

@@ -1,4 +1,16 @@
 # frozen_string_literal: true
+# test/ai_git/test_default.rb
+#
+# @purpose      Cover the default command: message normalizing, prompt
+#               building, and the base-URL and secret guards.
+# @exports      Subject under test: AIGit::Commands::Default.
+# @dependencies test/test_helper: loads the library, the framework, with_stub,
+#               and with_env;
+#               stringio: captures the warnings the guards print.
+# @sideEffects  Stubs AIGit::AIClient.complete and overrides AI_GIT_BASE_URL
+#               within blocks that restore both afterwards.
+# @notes        The generator is always stubbed, so no test reaches the model
+#               server or the repository.
 
 require_relative "../test_helper"
 require "stringio"

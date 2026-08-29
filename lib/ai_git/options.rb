@@ -1,4 +1,13 @@
 # frozen_string_literal: true
+# lib/ai_git/options.rb
+#
+# @purpose      Parse the default command's flags into a value object that the
+#               command queries instead of re-reading the argument vector.
+# @exports      AIGit::Options: .parse, #dry_run?, #push?, #assume_yes?,
+#               #force?, #help?, and the matching accessors.
+# @sideEffects  None.
+# @notes        An unrecognized argument raises rather than being ignored, so a
+#               mistyped flag never silently commits and pushes.
 
 module AIGit
   class Options

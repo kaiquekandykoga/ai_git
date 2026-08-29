@@ -1,4 +1,13 @@
 # frozen_string_literal: true
+# test/ai_git/test_start.rb
+#
+# @purpose      Cover the CLI router: the help and version flags, subcommand
+#               dispatch, and the exit on an unknown subcommand.
+# @exports      Subject under test: AIGit.start.
+# @dependencies test/test_helper: loads the library and the test framework;
+#               stringio: captures what the router prints.
+# @sideEffects  Replaces $stdout within a block that restores it, and asserts
+#               on the SystemExit raised by the unknown-subcommand path.
 
 require_relative "../test_helper"
 require "stringio"

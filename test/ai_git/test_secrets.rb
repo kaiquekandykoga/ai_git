@@ -1,4 +1,12 @@
 # frozen_string_literal: true
+# test/ai_git/test_secrets.rb
+#
+# @purpose      Cover the credential scanner: which paths and added lines block
+#               a run, which only warn, and what is ignored.
+# @exports      Subject under test: AIGit::Secrets.
+# @dependencies test/test_helper: loads the library and the test framework.
+# @sideEffects  None.
+# @notes        The fixtures are synthetic token shapes, not live credentials.
 
 require_relative "../test_helper"
 

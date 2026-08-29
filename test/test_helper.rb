@@ -1,4 +1,16 @@
 # frozen_string_literal: true
+# test/test_helper.rb
+#
+# @purpose      Bootstrap every test run: put lib on the load path, load the
+#               framework and the library, and define the shared helpers.
+# @exports      with_stub, with_env: temporary singleton-method and environment
+#               overrides, restored when the block ends.
+# @dependencies ai_git: the library under test;
+#               test-unit: the framework every test file builds on.
+# @sideEffects  Mutates $LOAD_PATH at load; with_env mutates ENV and with_stub
+#               redefines singleton methods for the duration of the block.
+# @notes        Both helpers restore state in an ensure block, so a failing
+#               assertion inside the block cannot leak into the next test.
 
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 

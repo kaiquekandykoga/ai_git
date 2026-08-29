@@ -7,6 +7,10 @@ Gemspec/RequiredRubyVersion:
 Style/Documentation:
   Enabled: false
 
+# AGENTS.md 3.3 puts the file header directly after the magic comment.
+Layout/EmptyLineAfterMagicComment:
+  Enabled: false
+
 Style/StringLiterals:
     EnforcedStyle: double_quotes
 

@@ -1,4 +1,11 @@
 # frozen_string_literal: true
+# test/ai_git/test_options.rb
+#
+# @purpose      Cover flag parsing: the unattended defaults, the long and short
+#               forms, and the rejection of an unknown flag.
+# @exports      Subject under test: AIGit::Options.
+# @dependencies test/test_helper: loads the library and the test framework.
+# @sideEffects  None.
 
 require_relative "../test_helper"
 

@@ -1,4 +1,13 @@
 # frozen_string_literal: true
+# test/ai_git/test_ai_client.rb
+#
+# @purpose      Cover the reply sanitizing, retry classification, and error
+#               messages of the chat client.
+# @exports      Subject under test: AIGit::AIClient.
+# @dependencies test/test_helper: loads the library and the test framework.
+# @sideEffects  None.
+# @notes        Nothing here touches the network: the tests exercise the pure
+#               helpers around the request rather than the request itself.
 
 require_relative "../test_helper"
 

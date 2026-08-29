@@ -1,5 +1,16 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
+# bin/ai_git
+#
+# @purpose      Executable entry point for the ai_git CLI: load the library and
+#               hand ARGV to AIGit.start.
+# @exports      ai_git: the `config` subcommand and the -n/--dry-run, --no-push,
+#               -y/--yes, -f/--force, -h/--help, -v/--version flags.
+# @dependencies lib/ai_git: supplies AIGit.start and AIGit::UI.error.
+# @sideEffects  Runs the whole CLI; exits 130 on interrupt and 1 on any other
+#               error, after printing the message to stderr.
+# @notes        Catches StandardError only, so the string messages the library
+#               raises surface as one clean line instead of a backtrace.
 
 require_relative "../lib/ai_git"
 

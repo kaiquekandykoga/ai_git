@@ -1,4 +1,14 @@
 # frozen_string_literal: true
+# lib/ai_git/secrets.rb
+#
+# @purpose      Screen the staged paths and diff for credentials before the
+#               diff leaves the machine, splitting blocking hits from warnings.
+# @exports      AIGit::Secrets: RISKY_PATHS, RISKY_CONTENT,
+#               SUSPICIOUS_ASSIGNMENT, .scan.
+# @sideEffects  None.
+# @notes        Only added lines are scanned: removing a secret is not a leak.
+#               A bare key/secret/password assignment warns rather than blocks,
+#               because the pattern also matches ordinary code.
 
 module AIGit
   module Secrets

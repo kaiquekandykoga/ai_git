@@ -1,4 +1,17 @@
 # frozen_string_literal: true
+# lib/ai_git/prompt.rb
+#
+# @purpose      Own the interactive confirmation step: ask what to do with the
+#               generated message, and open the user's editor on request.
+# @exports      AIGit::Prompt: ACTIONS, QUESTION, .interactive?, .ask_action,
+#               .edit.
+# @dependencies ai_git/ui: bolds the question before it is printed;
+#               shellwords: splits $VISUAL or $EDITOR into command and args;
+#               tempfile: holds the message the editor opens.
+# @sideEffects  Reads stdin and writes to stdout; spawns the editor process;
+#               writes a tempfile; reads $VISUAL and $EDITOR.
+# @notes        A closed stdin, where gets returns nil, is treated as an abort
+#               so a piped run never blocks waiting on an answer.
 
 require "shellwords"
 require "tempfile"

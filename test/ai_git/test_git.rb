@@ -1,4 +1,16 @@
 # frozen_string_literal: true
+# test/ai_git/test_git.rb
+#
+# @purpose      Cover the git wrapper against real repositories, including the
+#               detached-head and outside-a-repository paths.
+# @exports      Subject under test: AIGit::Git.
+# @dependencies test/test_helper: loads the library and the test framework;
+#               git: the binary the assertions run against;
+#               fileutils, tmpdir: build and remove the throwaway repositories.
+# @sideEffects  Creates temporary directories, initializes git repositories in
+#               them, changes the working directory, and spawns git.
+# @notes        Every case runs inside a fresh temporary repository, so no test
+#               can touch the checkout it is run from.
 
 require_relative "../test_helper"
 require "fileutils"

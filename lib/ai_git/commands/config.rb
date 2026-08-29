@@ -1,4 +1,13 @@
 # frozen_string_literal: true
+# lib/ai_git/commands/config.rb
+#
+# @purpose      Implement the `config` subcommand: print the resolved provider
+#               settings so the user can see what the tool will talk to.
+# @exports      AIGit::Commands::Config: .call.
+# @dependencies ai_git/config: supplies every value printed;
+#               ai_git/ai_client: supplies the read timeout shown;
+#               ai_git/ui: formats the heading and the key/value lines.
+# @sideEffects  Writes the resolved configuration to stdout.
 
 require_relative "../ai_client"
 require_relative "../config"

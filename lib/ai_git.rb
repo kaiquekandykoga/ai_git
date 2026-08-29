@@ -1,4 +1,17 @@
 # frozen_string_literal: true
+# lib/ai_git.rb
+#
+# @purpose      Library entry point and CLI router: load every component, then
+#               dispatch the argument vector to the matching subcommand.
+# @exports      AIGit: SUBCOMMANDS, HELP_FLAGS, VERSION_FLAGS, USAGE, .start.
+# @dependencies ai_git/version, ai_git/config, ai_git/ui, ai_git/ai_client,
+#               ai_git/git: the components the subcommands build on;
+#               ai_git/commands/default, ai_git/commands/config: the two
+#               subcommands .start dispatches to.
+# @sideEffects  Prints usage or the version to stdout; warns and exits 1 on an
+#               unknown subcommand; .start runs the selected subcommand.
+# @notes        A first argument starting with "-" is left in place for the
+#               default command's parser, so bare flags need no subcommand.
 
 require_relative "ai_git/version"
 require_relative "ai_git/config"

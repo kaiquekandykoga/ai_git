@@ -1,4 +1,17 @@
 # frozen_string_literal: true
+# lib/ai_git/git.rb
+#
+# @purpose      Wrap the git porcelain this tool drives: inspect the staged
+#               tree, then commit and push on the user's behalf.
+# @exports      AIGit::Git: NOT_A_REPOSITORY, MAX_ERROR_DETAIL, .repository?,
+#               .ensure_repository!, .staged_files, .diff, .current_branch,
+#               .detached_head?, .commit_with_message, .push_current_branch.
+# @dependencies git: every operation shells out to the binary;
+#               open3: captures stdout, stderr, and exit status together;
+#               tempfile: holds the commit message passed to `git commit -F`.
+# @sideEffects  Spawns git subprocesses; writes a tempfile; mutates the
+#               repository and the remote on commit and push.
+# @notes        Raises a bare string message; bin/ai_git renders it and exits 1.
 
 require "open3"
 require "tempfile"

@@ -33,8 +33,6 @@ A path that falls outside both lists is exempt. Do not extend either list by ana
 ### 3.2 When to write one
 Write the header when you create a required file. Add or update it when you change the behavior, exports, dependencies, or side effects of a required file you are already editing: a required file you touch leaves the edit carrying a correct header.
 
-Do not retrofit headers into files you are not otherwise touching, and never make a commit whose only content is added headers. A required file with no header yet is not a defect — it is a file no one has had reason to edit.
-
 ### 3.3 Format
 The header sits at the top of the file: after the shebang and `# frozen_string_literal: true` if present, with no blank line between them, and before everything else — the first `require`, or the first statement in a file that has none. One blank line follows it.
 
