@@ -5,12 +5,29 @@ recommended to strangers. Ordered by priority: **P0** blocks a confident 1.0,
 **P3** is polish.
 
 Current state: 79 tests passing, RuboCop clean, CI on Ubuntu/macOS/FreeBSD,
-version 1.0.0. The P0 correctness and safety work is
-done: `sanitize` no longer eats message bodies, git reads are checked, empty
-model responses fail loudly, and committing is gated behind a confirmation
-prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`.
+Dependabot watching Bundler and Actions, release automation wired to
+`AIGit::VERSION`, version 1.0.0. Committing is gated behind a confirmation
+prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`, git reads are
+checked, and empty model responses fail loudly. Two correctness defects found
+since are listed as P0 below.
 
 ---
+
+## P0 — Correctness
+
+- **`sanitize` still deletes a legitimate title.** `strip_preamble` drops every
+  leading line matching `PREAMBLE_PREFIXES`, and that regex matches ordinary
+  commit titles. Verified: `"Output the resolved settings\n\nBody."` sanitizes
+  down to `"Body."`, so the commit lands with the body as its subject line.
+  Anything starting with "Output", "Generated", "Here", "Based on" or "The
+  changes" is at risk. Only strip a preamble line when a real message follows
+  it, or match the full known preamble sentences rather than a prefix word.
+- **A diff that is not valid UTF-8 crashes the run.** `git diff --cached` on a
+  Latin-1 or otherwise non-UTF-8 text file returns bytes tagged UTF-8 but
+  invalid, and `body.to_json` in `post_json` raises `JSON::GeneratorError:
+  source sequence is illegal/malformed utf-8` — surfaced as a bare, meaningless
+  `ai_git: source sequence…` line. Verified against a scratch repo. Scrub the
+  diff with `scrub`/`encode(invalid: :replace)` before building the prompt.
 
 ## P1 — Robustness
 
@@ -18,16 +35,38 @@ prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`.
   the run when a `.env`, private key or token-shaped string is staged, but the
   diff is still sent verbatim once `--force` is passed. Mask the matched values
   in the prompt.
+- **Scan the whole diff, not only added lines.** `Secrets.added_lines` keeps
+  lines starting with `+`, but the model receives the entire diff — including
+  the three context lines around every hunk. A secret sitting next to an edited
+  line is sent and never flagged. Scan added lines for blocking, and context
+  lines at least for a warning.
 - **Bound the prompt size.** The whole diff is interpolated into the prompt with
   no cap. A large refactor silently overruns the model's context and yields a
   garbage message. Truncate per-file with a clear marker, skip binary files, and
   skip/summarize lockfiles and generated files.
+- **Move the diff to the end of the prompt.** `standard_prompt` puts the diff
+  before the rules and the two worked examples, so the long static tail differs
+  in position on every run and llama.cpp's prefix cache never hits. Ordering the
+  prompt as instructions → rules → examples → diff makes the constant part a
+  reusable prefix and cuts time-to-first-token on every run after the first.
 - **Send `max_tokens`.** No output cap is requested, so a rambling model can
   burn the full 120s read timeout.
+- **Make regenerate actually regenerate.** `resolve_message` re-runs the same
+  prompt at the same hardcoded `temperature: 0.3`. On a server with a fixed seed
+  the user gets the identical message back and the loop is useless. Vary the
+  temperature (or pass a fresh seed) on each retry, and consider feeding the
+  rejected message back as "not this one".
+- **Re-check the staged set before committing.** `staged_files` and `diff` are
+  read once, then the prompt can sit open indefinitely; `git commit -F` commits
+  whatever is staged at that later moment. Someone who stages another file
+  mid-prompt commits work the message never described. Snapshot the staged tree
+  and re-verify (or commit the recorded pathspec) before writing the commit.
 - **Verify the push target before generating.** `push_current_branch` is
-  hardcoded to `origin HEAD`, but the README promises "the current branch's
-  upstream". Either honor the real upstream or fix the docs — and check the
-  remote exists *before* spending a model call.
+  hardcoded to `git push -u origin HEAD`, but the README promises "the current
+  branch's upstream". Worse, `-u` silently rewrites the branch's tracking config
+  to `origin` even when it deliberately tracked something else. Honor the real
+  upstream (or drop `-u`), and check the remote exists *before* spending a model
+  call.
 - **Make timeouts configurable.** `READ_TIMEOUT_SECONDS = 120` and
   `OPEN_TIMEOUT_SECONDS = 10` are constants; slow local hardware needs a
   config-file override.
@@ -46,21 +85,36 @@ prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`.
   (verified: `#` lines survive `-F`), but a user's `commit.cleanup` config can
   silently mangle the generated message.
 - **Colorize stderr off stderr.** `UI.color?` checks `$stdout.tty?`, yet
-  `UI.error` writes to `$stderr` — colors are wrong when only one stream is
-  redirected.
+  `UI.error` and `UI.warning` write to `$stderr` — colors are wrong when only
+  one stream is redirected.
+- **Honor `NO_COLOR` and add `--no-color`.** `no_color` is config-file only.
+  The de-facto `NO_COLOR` environment variable is ignored, and there is no
+  per-run flag to turn color off.
 - **Handle flags after a subcommand.** `ai_git config --help` is silently
-  ignored, and an unknown leading flag like `--foo` falls through to the default
-  command and gets swallowed.
+  ignored (`Commands::Config.call` takes `_argv`), and an unknown leading flag
+  like `--foo` falls through to the default command and gets swallowed.
+- **Accept combined and terminated flags.** The hand-rolled `Options.parse`
+  rejects `-ny`, `--` and `--flag=value`, all of which a user reasonably
+  expects. Either document the limitation or move to `OptionParser`.
 
 ## P1 — Configuration
 
 - **Extend the config file.** `~/.ai_git/config.yml` now carries `model_name`,
-  `base_url` and `no_color`. Add timeouts and push policy, an in-repo
-  `.ai_git.yml` for per-project overrides, and a flag-level override for the
-  settings that need one per run.
+  `base_url` and `no_color`. Add timeouts, temperature and push policy, an
+  in-repo `.ai_git.yml` for per-project overrides, and a flag-level override for
+  the settings that need one per run.
+- **Support environment overrides.** Nothing can be set without editing a file
+  in `$HOME`, which makes CI runs and one-off experiments awkward. Read
+  `AI_GIT_BASE_URL` / `AI_GIT_MODEL_NAME` (and a `--config` path flag) with a
+  documented precedence: flag → env → file → default.
+- **Honor `XDG_CONFIG_HOME`.** `config_dir` is hardcoded to `~/.ai_git`;
+  `$XDG_CONFIG_HOME/ai_git` should win when it is set.
 - **Support an API key.** `Config` has no auth concept at all. Any
   OpenAI-compatible server behind a token is currently unusable. Read it from
   the config file; never log it, and never print it in `ai_git config`.
+- **Print every resolved setting.** `Commands::Config.resolved_rows` omits
+  `no_color` and the open timeout, so `ai_git config` cannot answer "why is my
+  output plain?".
 - **Allow overriding the prompt template** for teams with commit conventions
   (Conventional Commits, ticket-ID prefixes, line-length rules).
 
@@ -75,25 +129,38 @@ prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`.
   repo, stages a file, stubs the client, and asserts a commit lands.
 - **No test covers the confirmation prompt.** `Prompt.ask_action` and
   `Prompt.edit` are exercised by hand over a PTY only.
+- **Add regression tests for both P0 defects**: a title beginning with a
+  preamble word must survive `sanitize`, and a staged Latin-1 file must not
+  raise from the JSON encoder.
+- **Assert the docs match the parser.** `USAGE`, the flag table in
+  `doc/USAGE.md` and `Options` are three hand-maintained lists of the same
+  flags. A test that walks `Options.parse` would stop them drifting.
 - **Add coverage measurement** (SimpleCov) with a floor enforced in CI.
 
 ## P2 — CI/CD & release
 
 - **Test more than one Ruby version.** The matrix pins `'4.0'` only. Add the
   supported range so `required_ruby_version` (below) means something.
-- **Turn on `bundler-cache: true`** in both workflows; installs are uncached
-  today.
+- **Turn on `bundler-cache: true`** in all three workflows; installs are
+  uncached today.
 - **Add a `gem build` + install smoke job** so packaging breaks are caught in
   CI, not at push time.
+- **Restrict workflow token permissions.** `ci.yml` and `freebsd15.yml` declare
+  no `permissions:` block, so each job gets the repository default. Set
+  `permissions: contents: read` on both.
+- **Add a `concurrency` group** so a new push cancels the superseded run
+  instead of paying for a FreeBSD VM that no longer matters.
+- **Pin action versions.** `actions/checkout` is `v7` in `ci.yml` but `v6` in
+  `freebsd15.yml` — inconsistent. In `release.yml`, which holds publishing
+  rights, pin to commit SHAs rather than floating tags.
+- **Lint on FreeBSD too, or say why not.** `freebsd15.yml` runs `rake test`
+  only, so a platform-specific RuboCop failure is invisible there.
 - **Finish the release automation setup.** `.github/workflows/release.yml`
   tags and publishes whenever a push to `master` bumps `AIGit::VERSION`, via
   RubyGems trusted publishing (OIDC); it stays inert until the trusted
   publisher is registered on rubygems.org for this repo, workflow file, and the
   `release` environment.
-- **Add Dependabot** for Bundler and GitHub Actions.
 - **Add `bundler-audit`** to CI for advisory scanning.
-- **Pin action versions.** `actions/checkout` is `v7` in `ci.yml` but `v6` in
-  `freebsd15.yml` — inconsistent.
 
 ## P2 — Packaging
 
@@ -102,11 +169,17 @@ prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`.
   that. Users on older Rubies get a runtime crash instead of a clean resolver
   error.
 - **Add `spec.email`** — RubyGems shows no contact for the author.
-- **Add `changelog_uri`** to gemspec metadata (needs a CHANGELOG first).
+- **Add `homepage_uri`, `documentation_uri` and `changelog_uri`** to gemspec
+  metadata (the last needs a CHANGELOG first).
 - **Ship `CHANGELOG.md` in `spec.files`.**
 - **Replace the C/CMake `.gitignore`.** It carries `*.o`, `*.so`,
-  `CMakeCache.txt`, and `cmake_install.cmake` from another project and is
-  missing Ruby entries (`/pkg`, `/coverage`, `.bundle`, `/doc/api`).
+  `CMakeCache.txt`, and `cmake_install.cmake` from another project, and its
+  `Makefile` and `*.cmake` entries would silently swallow a real file if one is
+  ever added. It is also missing the Ruby entries (`/pkg`, `/coverage`,
+  `.bundle`, `/doc/api`).
+- **Remove the stray `ai_git-1.0.0.gem` at the repo root.** It is untracked and
+  hidden by the `*.gem` rule, but it is a stale hand-built artifact; `rake
+  build` writes to `pkg/`.
 - **Add `.ruby-version`** so contributors and CI agree on a version.
 - **Decide on `Gemfile.lock`.** It is committed; gems conventionally gitignore
   it. Keep it deliberately (for reproducible CI) or drop it — just make it a
@@ -115,17 +188,18 @@ prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`.
 ## P3 — Documentation
 
 - **Fix the push claim.** The README says `ai_git` "pushes to the current
-  branch's upstream"; the code always pushes to `origin HEAD`.
+  branch's upstream"; the code always pushes to `origin HEAD` and sets tracking.
 - **Write `CHANGELOG.md`** (Keep a Changelog format), starting with the 0.1.0 →
   1.0.0 history.
-- **Write `CONTRIBUTING.md`** — setup, `bundle exec rake`, RuboCop, how to
-  propose changes.
+- **Write `CONTRIBUTING.md`** — setup, `bundle exec rake`, RuboCop, the
+  `AGENTS.md` file-header convention, and how to propose changes.
 - **Write `SECURITY.md`** — how to report a vulnerability, and an explicit
   statement about what diff data is sent where.
 - **Document the privacy model in the README.** State plainly that the staged
   diff is sent to the configured server and that the default is local-only.
 - **Document a troubleshooting section**: server not running, wrong model name,
   404s, slow first token while the model loads.
+- **Add CI and gem-version badges** to the README.
 - **Add GitHub issue and PR templates.**
 
 ## P3 — Polish
@@ -135,6 +209,10 @@ prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`.
 - Add a spinner or elapsed-time indicator during generation — it currently
   prints "Generating commit message…" and blocks for up to 120s in silence.
 - Add shell completions (bash/zsh) for subcommands and flags.
-- Support amending (`--amend`) and staging-all (`-a`) as opt-in flags.
+- Support amending (`--amend`) and staging-all (`-a`) as opt-in flags, plus
+  `--no-verify` and `--signoff` passthrough to `git commit`.
+- Fall back to git's own editor setting. `Prompt.edit` reads `$VISUAL` and
+  `$EDITOR` only, so a user who configured `core.editor` (or `$GIT_EDITOR`) is
+  told to "set $EDITOR or $VISUAL first" despite having an editor configured.
 - Verify and document Windows support, or state that it is unsupported.
 - Consider streaming the response so the message appears as it is written.
