@@ -89,3 +89,8 @@ The tree was swept clean of body comments in one pass on 2026-08-29. Every comme
 The header is part of the file. When behavior, exports, dependencies, or side effects change, update the affected lines in the same edit and delete any line that no longer holds.
 
 A stale header is a defect in the file that carries it. Fix it in a file you are already editing; when you notice one elsewhere, report it and move on rather than opening the file.
+
+## 4. Markdown file names
+Every `*.md` file in this repository is named in upper case: the stem is all capitals, words separated by `_`, and the extension stays lower-case `.md` — `README.md`, `AGENTS.md`, `doc/USAGE.md`, `CODE_OF_CONDUCT.md`. Directory names are unaffected; `doc/` stays lower-case.
+
+Create a new Markdown file under this rule, and rename one that arrives in any other case with `git mv`, updating every reference to it in the same change.
