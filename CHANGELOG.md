@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-09-11
+
 ### Added
 
 - `ai_git help [subcommand]` documents every subcommand and flag.
@@ -15,8 +17,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Every action is now named: `ai_git commit` is the only path that writes and a
-  bare `ai_git` does nothing.
+- **Breaking:** every action is now named. `ai_git commit` is the only path
+  that writes, and a bare `ai_git` does nothing; scripts that relied on the
+  implicit commit must call `ai_git commit`.
 - `required_ruby_version` is `>= 3.1`, and CI runs the suite on 3.1, 3.2, 3.3,
   3.4 and 4.0 across Ubuntu and macOS.
 - Command handling moved into dedicated `AIGit::Commands` modules.
@@ -61,5 +64,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Releases before 1.0.0 predate this changelog; see the git history for them.
 
-[Unreleased]: https://github.com/kaiquekandykoga/ai_git/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/kaiquekandykoga/ai_git/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/kaiquekandykoga/ai_git/compare/v1.0.1...v2.0.0
 [1.0.1]: https://github.com/kaiquekandykoga/ai_git/releases/tag/v1.0.1
