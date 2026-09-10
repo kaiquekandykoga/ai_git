@@ -1,31 +1,16 @@
 # Production Readiness TODO
 
 Remaining work for taking `ai_git` from a working prototype to a gem that can be
-recommended to strangers. Ordered by priority: **P0** blocks a confident 1.0,
-**P3** is polish.
+recommended to strangers. Ordered by priority: **P1** is robustness and
+configuration, **P3** is polish.
 
 Current state: 85 tests passing, RuboCop clean, CI on Ubuntu/macOS/FreeBSD,
 Dependabot watching Bundler and Actions, release automation wired to
 `AIGit::VERSION`, version 1.0.0. Committing is gated behind a confirmation
 prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`, git reads are
-checked, and empty model responses fail loudly. Both P0 correctness defects
-are fixed; nothing blocks a 1.0 today.
+checked, and empty model responses fail loudly. Nothing blocks a 1.0 today.
 
 ---
-
-## P0 — Correctness
-
-None outstanding. Fixed:
-
-- ~~**`sanitize` deleted a legitimate title.**~~ `strip_preamble` matched a bare
-  leading word, so `"Output the resolved settings\n\nBody."` sanitized down to
-  `"Body."`. Preamble detection now requires a whole announcing sentence
-  (`LABELLED_PREAMBLE`, `BARE_LANGUAGE_TAG`, `ANNOUNCING_PREAMBLE`) and never
-  strips a reply down to nothing.
-- ~~**A diff that was not valid UTF-8 crashed the run.**~~ `git diff --cached`
-  on a Latin-1 file returned bytes tagged UTF-8 but invalid, and `body.to_json`
-  raised `JSON::GeneratorError`. `Git.capture` now scrubs every captured
-  stream to valid UTF-8 at the source.
 
 ## P1 — Robustness
 
