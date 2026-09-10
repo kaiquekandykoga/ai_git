@@ -2,80 +2,57 @@
 # lib/ai_git.rb
 #
 # @purpose      Library entry point and CLI router: load every component, then
-#               dispatch the argument vector to the matching subcommand.
-# @exports      AIGit: SUBCOMMANDS, HELP_FLAGS, VERSION_FLAGS, USAGE, .start.
+#               dispatch the argument vector to the named subcommand.
+# @exports      AIGit: SUBCOMMANDS, HELP_FLAGS, VERSION_FLAGS, .start.
 # @dependencies ai_git/version, ai_git/config, ai_git/ui, ai_git/ai_client,
 #               ai_git/git: the components the subcommands build on;
-#               ai_git/commands/default, ai_git/commands/config: the two
-#               subcommands .start dispatches to.
-# @sideEffects  Prints usage or the version to stdout; warns and exits 1 on an
-#               unknown subcommand; .start runs the selected subcommand.
-# @notes        A first argument starting with "-" is left in place for the
-#               default command's parser, so bare flags need no subcommand.
+#               ai_git/commands/commit, ai_git/commands/config,
+#               ai_git/commands/help: the subcommands .start dispatches to.
+# @sideEffects  Prints the usage, the version or a hint to stdout; warns and
+#               exits 1 on an unknown subcommand or option; .start runs the
+#               selected subcommand.
+# @notes        Every action needs its subcommand named: an empty vector
+#               prints where to look and changes nothing, so a bare `ai_git`
+#               can no longer commit by accident.
 
 require_relative "ai_git/version"
 require_relative "ai_git/config"
 require_relative "ai_git/ui"
 require_relative "ai_git/ai_client"
 require_relative "ai_git/git"
-require_relative "ai_git/commands/default"
+require_relative "ai_git/commands/commit"
 require_relative "ai_git/commands/config"
+require_relative "ai_git/commands/help"
 
 module AIGit
   module_function
 
   SUBCOMMANDS = {
+    "commit" => AIGit::Commands::Commit,
     "config" => AIGit::Commands::Config,
-    "default" => AIGit::Commands::Default
+    "help" => AIGit::Commands::Help
   }.freeze
 
-  HELP_FLAGS    = %w[-h --help help].freeze
+  HELP_FLAGS    = %w[-h --help].freeze
   VERSION_FLAGS = %w[-v --version].freeze
-
-  USAGE = <<~USAGE
-    Usage: ai_git [subcommand] [options]
-
-    Subcommands:
-      (none)    Generate a commit message, commit, and push staged files
-      config    Show the resolved provider configuration
-
-    Options:
-      -n, --dry-run  Print the generated message and change nothing
-          --no-push  Commit locally without pushing
-      -y, --yes      Skip the confirmation prompt (unattended)
-      -f, --force    Proceed despite secret or remote-server warnings
-      -h, --help     Show this message
-      -v, --version  Print version
-
-    On a terminal ai_git asks before committing: accept, edit, regenerate or
-    quit. Piped or scripted runs commit and push unattended.
-
-    Configuration (~/.ai_git/config.yml, or config.yaml):
-      model_name: ggml-org/gemma-4-E4B-it-GGUF:Q8_0   Model to prompt
-      base_url: http://127.0.0.1:8080                 llama.cpp server
-      no_color: true                                  Disable colored output
-
-    Run `ai_git config` to see the resolved settings and the file they
-    come from.
-  USAGE
 
   def start(args)
     args = args.dup
     first = args.first
 
-    return puts(USAGE) if first && HELP_FLAGS.include?(first)
-    return puts(VERSION) if first && VERSION_FLAGS.include?(first)
+    return puts(AIGit::Commands::Help::NO_SUBCOMMAND) if first.nil?
+    return AIGit::Commands::Help.call([]) if HELP_FLAGS.include?(first)
+    return puts(VERSION) if VERSION_FLAGS.include?(first)
 
-    command = "default"
-    if first && !first.start_with?("-")
-      unless SUBCOMMANDS.key?(first)
-        warn "Unknown subcommand: #{first}"
-        warn USAGE
-        exit 1
-      end
-      command = args.shift
-    end
+    unknown_argument!(first) unless SUBCOMMANDS.key?(first)
 
-    SUBCOMMANDS[command].call(args)
+    SUBCOMMANDS[args.shift].call(args)
+  end
+
+  def unknown_argument!(argument)
+    label = argument.start_with?("-") ? "option" : "subcommand"
+    warn "Unknown #{label}: #{argument}"
+    warn AIGit::Commands::Help::USAGE
+    exit 1
   end
 end

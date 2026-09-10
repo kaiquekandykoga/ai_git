@@ -8,9 +8,11 @@
 # @dependencies ai_git/config: supplies every value printed and the path of
 #               the config file;
 #               ai_git/ai_client: supplies the read timeout shown;
+#               ai_git/commands/help: supplies the text --help prints;
 #               ai_git/ui: formats the heading and the key/value lines.
-# @sideEffects  Writes the resolved configuration to stdout; raises a string
-#               when the config file cannot be resolved.
+# @sideEffects  Writes the resolved configuration or the help topic to stdout;
+#               raises a string on an unknown argument or when the config file
+#               cannot be resolved.
 # @notes        Every value is resolved before the first line is printed, so a
 #               broken config file reports its error instead of a half-printed
 #               listing.
@@ -18,13 +20,18 @@
 require_relative "../ai_client"
 require_relative "../config"
 require_relative "../ui"
+require_relative "help"
 
 module AIGit
   module Commands
     module Config
       module_function
 
-      def call(_argv = [])
+      def call(argv = [])
+        argument = argv.to_a.first
+        return puts(AIGit::Commands::Help.topic("config")) if AIGit::HELP_FLAGS.include?(argument)
+        raise "Unknown option: #{argument}. Run `ai_git help config` for usage." unless argument.nil?
+
         rows = resolved_rows(AIGit::Config)
 
         AIGit::UI.heading("ai_git configuration")
