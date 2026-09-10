@@ -1,27 +1,24 @@
-# Build artifacts
-build/
-*.o
-*.a
-*.so
-*.dylib
-*.dll
+# Bundler
+.bundle/
+vendor/bundle/
+Gemfile.lock
+
+# Gem build artifacts
+/pkg/
 *.gem
 
-# Executables
-*.exe
+# Test and coverage output
+/coverage/
+
+# Generated API docs
+/doc/api/
+.yardoc/
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# CMake
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-Makefile
-*.cmake
 
 # OS
 .DS_Store

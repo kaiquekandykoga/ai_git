@@ -6,11 +6,15 @@ configuration, **P3** is polish.
 
 Current state: 99 tests passing, RuboCop clean, CI on Ubuntu/macOS/FreeBSD,
 Dependabot watching Bundler and Actions, release automation wired to
-`AIGit::VERSION`, version 1.0.1. Every action is named: `ai_git commit` is the
-only path that writes, a bare `ai_git` does nothing, and `ai_git help
-[subcommand]` documents the rest. Committing is gated behind a confirmation
-prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`, git reads are
-checked, and empty model responses fail loudly. Nothing blocks a 1.0 today.
+`AIGit::VERSION`, version 1.0.1. Packaging is settled: the gemspec carries
+contact, homepage, documentation and changelog metadata plus a
+`required_ruby_version` of `>= 4.0`, `CHANGELOG.md` ships with the gem,
+`.ruby-version` pins the toolchain, and `Gemfile.lock` is deliberately
+untracked. Every action is named: `ai_git commit` is the only path that
+writes, a bare `ai_git` does nothing, and `ai_git help [subcommand]` documents
+the rest. Committing is gated behind a confirmation prompt plus `--dry-run` /
+`--no-push` / `--yes` / `--force`, git reads are checked, and empty model
+responses fail loudly. Nothing blocks a 1.0 today.
 
 ---
 
@@ -142,35 +146,12 @@ checked, and empty model responses fail loudly. Nothing blocks a 1.0 today.
   `release` environment.
 - **Add `bundler-audit`** to CI for advisory scanning.
 
-## P2 — Packaging
-
-- **Set `required_ruby_version`.** It is absent, and
-  `Gemspec/RequiredRubyVersion` is explicitly disabled in `.rubocop.yml` to hide
-  that. Users on older Rubies get a runtime crash instead of a clean resolver
-  error.
-- **Add `spec.email`** — RubyGems shows no contact for the author.
-- **Add `homepage_uri`, `documentation_uri` and `changelog_uri`** to gemspec
-  metadata (the last needs a CHANGELOG first).
-- **Ship `CHANGELOG.md` in `spec.files`.**
-- **Replace the C/CMake `.gitignore`.** It carries `*.o`, `*.so`,
-  `CMakeCache.txt`, and `cmake_install.cmake` from another project, and its
-  `Makefile` and `*.cmake` entries would silently swallow a real file if one is
-  ever added. It is also missing the Ruby entries (`/pkg`, `/coverage`,
-  `.bundle`, `/doc/api`).
-- **Remove the stray `ai_git-1.0.0.gem` at the repo root.** It is untracked and
-  hidden by the `*.gem` rule, but it is a stale hand-built artifact; `rake
-  build` writes to `pkg/`.
-- **Add `.ruby-version`** so contributors and CI agree on a version.
-- **Decide on `Gemfile.lock`.** It is committed; gems conventionally gitignore
-  it. Keep it deliberately (for reproducible CI) or drop it — just make it a
-  decision.
-
 ## P3 — Documentation
 
 - **Fix the push claim.** The README says `ai_git` "pushes to the current
   branch's upstream"; the code always pushes to `origin HEAD` and sets tracking.
-- **Write `CHANGELOG.md`** (Keep a Changelog format), starting with the 0.1.0 →
-  1.0.0 history.
+- **Backfill the pre-1.0 changelog.** `CHANGELOG.md` covers 1.0.0 onward; the
+  0.0.x → 0.3.0 releases are still only in the git history.
 - **Write `CONTRIBUTING.md`** — setup, `bundle exec rake`, RuboCop, the
   `AGENTS.md` file-header convention, and how to propose changes.
 - **Write `SECURITY.md`** — how to report a vulnerability, and an explicit
