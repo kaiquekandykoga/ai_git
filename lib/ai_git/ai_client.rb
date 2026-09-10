@@ -6,7 +6,8 @@
 #               the reply.
 # @exports      AIGit::AIClient: READ_TIMEOUT_SECONDS, OPEN_TIMEOUT_SECONDS,
 #               MAX_ATTEMPTS, RETRY_BASE_DELAY, TRANSIENT_STATUSES,
-#               RETRYABLE_ERRORS, .complete, .sanitize.
+#               RETRYABLE_ERRORS, LABELLED_PREAMBLE, BARE_LANGUAGE_TAG,
+#               ANNOUNCING_PREAMBLE, .complete, .sanitize.
 # @dependencies ai_git/config: supplies the base URL, endpoint, and provider
 #               name used in requests and error messages;
 #               json: encodes the request body and parses the response;
@@ -16,7 +17,9 @@
 # @notes        Retries with exponential backoff on the listed connection
 #               errors and status codes only; any other status raises at once.
 #               Sanitizing also unescapes a reply whose only newlines are
-#               literal backslash-n, which some models emit.
+#               literal backslash-n, which some models emit, and only drops
+#               a leading line that is a whole preamble sentence, so a title
+#               opening with "Output" or "The changes" is left alone.
 
 require "json"
 require "net/http"
@@ -39,8 +42,18 @@ module AIGit
       Net::OpenTimeout, Net::ReadTimeout, SocketError, EOFError
     ].freeze
 
-    PREAMBLE_PREFIXES = /\A(here|output|generated|based\son|the\schanges|
-                          the\s(commit\smessage|review)\sis|json|markdown)\b/ix.freeze
+    # A preamble is a whole announcing sentence, never a bare leading word: an
+    # ordinary title such as "Output the resolved settings" must survive.
+    LABELLED_PREAMBLE = /\A(here|output|generated|result|response|note)\s*:/i.freeze
+    BARE_LANGUAGE_TAG = /\A(json|markdown|text|plaintext)\z/i.freeze
+    ANNOUNCING_PREAMBLE = /
+      \A(
+          (here(\s+is|'s|\s+are)?|below\s+is)\b.*\b(commit\s+message|message)\b
+        | based\s+on\s+the\s+(changes|diff|staged\s+\w+)\b.*:\s*\z
+        | the\s+(commit\s+message|review)\s+is\b
+        | (generated|suggested|proposed)\s+commit\s+message\b
+      )
+    /ix.freeze
     CODE_FENCE = /\A`{3,}/.freeze
     ESCAPED_MESSAGE = /\A[^\n]*\\n\\n[^\n]*\z/.freeze
 
@@ -155,11 +168,18 @@ module AIGit
     end
 
     def strip_preamble(lines)
-      lines.drop_while { |line| line.strip.empty? || preamble?(line) }
+      stripped = lines.drop_while { |line| line.strip.empty? || preamble?(line) }
+
+      # Never let the preamble rule eat the entire reply: a message that looks
+      # like nothing but preamble is more likely a title we misread.
+      stripped.any? { |line| !line.strip.empty? } ? stripped : lines
     end
 
     def preamble?(line)
-      line.strip.match?(PREAMBLE_PREFIXES)
+      text = line.strip
+      text.match?(LABELLED_PREAMBLE) ||
+        text.match?(BARE_LANGUAGE_TAG) ||
+        text.match?(ANNOUNCING_PREAMBLE)
     end
   end
 end

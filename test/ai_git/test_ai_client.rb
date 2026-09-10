@@ -41,6 +41,28 @@ class TestAIClient < Test::Unit::TestCase
     assert_equal "Fix parser crash\n\nThe changes helped.", AIGit::AIClient.sanitize(raw)
   end
 
+  def test_sanitize_keeps_a_title_that_opens_with_a_preamble_word
+    {
+      "Output the resolved settings" => "Body.",
+      "Generated the development bundle" => "Body.",
+      "Here documents replace the heredoc" => "Body.",
+      "The changes land behind a flag" => "Body.",
+      "Based on the profile, cache tokens" => "Body."
+    }.each do |title, body|
+      raw = "#{title}\n\n#{body}"
+      assert_equal raw, AIGit::AIClient.sanitize(raw), "#{title.inspect} must survive sanitizing"
+    end
+  end
+
+  def test_sanitize_keeps_a_reply_that_is_nothing_but_a_preamble_line
+    raw = "Here is the commit message:"
+    assert_equal raw, AIGit::AIClient.sanitize(raw)
+  end
+
+  def test_sanitize_drops_a_bare_language_tag_line
+    assert_equal "Title\n\nBody", AIGit::AIClient.sanitize("json\nTitle\n\nBody")
+  end
+
   def test_sanitize_strips_surrounding_code_fences
     assert_equal "Title\n\nBody", AIGit::AIClient.sanitize("```\nTitle\n\nBody\n```")
   end
