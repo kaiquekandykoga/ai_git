@@ -3,9 +3,13 @@
 AI-powered Git commit messages using a local LLM
 
 `ai_git` is a Ruby command-line tool that writes your commit messages for you.
-Stage your changes, run `ai_git`, and it reads the staged diff, asks a local
-[llama.cpp](https://github.com/ggml-org/llama.cpp) server for a commit message,
-shows it to you, and — once you accept — commits and pushes to `origin`.
+Stage your changes, run `ai_git commit`, and it reads the staged diff, asks a
+local [llama.cpp](https://github.com/ggml-org/llama.cpp) server for a commit
+message, shows it to you, and — once you accept — commits and pushes to
+`origin`.
+
+Every action is named: a bare `ai_git` does nothing, and `ai_git help` lists
+what it can do.
 
 The generated message follows the conventional shape of a good commit: a short
 imperative title under 72 characters, a blank line, then plain prose explaining
@@ -28,7 +32,7 @@ gem install ai_git
 
 ./llama-server --port 8080   # any OpenAI-compatible local server
 git add <files>
-ai_git
+ai_git commit
 ```
 
 ```
@@ -39,6 +43,9 @@ Accept it, open it in `$EDITOR`, ask for another one, or quit. The prompt only
 appears on a terminal, so piped and scripted runs stay unattended. Use
 `--dry-run` to see the message without committing, or `--no-push` to commit
 locally.
+
+Run `ai_git help` for every subcommand, or `ai_git help commit` for what one
+of them does and the flags it takes.
 
 ## Documentation
 

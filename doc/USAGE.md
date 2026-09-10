@@ -43,7 +43,7 @@ ai_git talks to a local [llama.cpp](https://github.com/ggml-org/llama.cpp) serve
 ```bash
 # Start llama.cpp's server, then run ai_git with defaults
 ./llama-server --port 8080
-ai_git
+ai_git commit
 
 # Or point at a custom model/port
 mkdir -p ~/.ai_git
@@ -55,13 +55,16 @@ YAML
 
 ## Run
 
+Every action is named by a subcommand. A bare `ai_git` does nothing and changes
+nothing; it only points you at `ai_git help`.
+
 ```bash
 git add <files>
-ai_git
+ai_git commit
 ```
 
-`ai_git` generates a commit message from your staged changes, then asks what to
-do with it:
+`ai_git commit` generates a commit message from your staged changes, then asks
+what to do with it:
 
 ```
 Commit this message? [A]ccept / [e]dit / [r]egenerate / [q]uit:
@@ -72,16 +75,19 @@ terminal — piped or scripted runs stay unattended, as does `--yes`.
 
 ## Flags
 
+These belong to `ai_git commit`:
+
 | Flag | Description |
 |------|-------------|
 | `-n`, `--dry-run` | Print the generated message and change nothing |
 | `--no-push` | Commit locally without pushing |
 | `-y`, `--yes` | Skip the confirmation prompt (unattended) |
 | `-f`, `--force` | Proceed despite secret or remote-server warnings |
+| `-h`, `--help` | Describe the subcommand and its flags |
 
 ```bash
-ai_git --dry-run     # see what it would write, commit nothing
-ai_git --no-push     # commit locally, publish later yourself
+ai_git commit --dry-run     # see what it would write, commit nothing
+ai_git commit --no-push     # commit locally, publish later yourself
 ```
 
 ## Privacy
@@ -101,7 +107,20 @@ stage.
 
 | Subcommand | Description |
 |------------|-------------|
-| `ai_git` | Generate a commit message, commit, and push staged files |
+| `ai_git commit` | Generate a commit message, commit, and push staged files |
 | `ai_git config` | Show the resolved provider configuration |
-| `ai_git --help` | Show usage |
+| `ai_git help` | List every subcommand and the top-level options |
+| `ai_git help <subcommand>` | Describe one subcommand and the flags it takes |
+| `ai_git --help` | Same overview as `ai_git help` |
 | `ai_git --version` | Print version |
+
+`ai_git` on its own is not one of them: with no subcommand it prints where to
+look and exits without touching the repository. Naming an unknown subcommand,
+or a flag where a subcommand belongs, prints the usage and exits `1`.
+
+Each subcommand also answers `--help` for itself:
+
+```bash
+ai_git help commit     # or: ai_git commit --help
+ai_git help config     # or: ai_git config --help
+```

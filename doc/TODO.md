@@ -4,9 +4,11 @@ Remaining work for taking `ai_git` from a working prototype to a gem that can be
 recommended to strangers. Ordered by priority: **P1** is robustness and
 configuration, **P3** is polish.
 
-Current state: 85 tests passing, RuboCop clean, CI on Ubuntu/macOS/FreeBSD,
+Current state: 99 tests passing, RuboCop clean, CI on Ubuntu/macOS/FreeBSD,
 Dependabot watching Bundler and Actions, release automation wired to
-`AIGit::VERSION`, version 1.0.0. Committing is gated behind a confirmation
+`AIGit::VERSION`, version 1.0.1. Every action is named: `ai_git commit` is the
+only path that writes, a bare `ai_git` does nothing, and `ai_git help
+[subcommand]` documents the rest. Committing is gated behind a confirmation
 prompt plus `--dry-run` / `--no-push` / `--yes` / `--force`, git reads are
 checked, and empty model responses fail loudly. Nothing blocks a 1.0 today.
 
@@ -55,7 +57,7 @@ checked, and empty model responses fail loudly. Nothing blocks a 1.0 today.
   config-file override.
 - **Add jitter to the retry backoff.** `retry_delay` is deterministic
   exponential; add jitter and honor a `Retry-After` header on 429/503.
-- **Unify the error path.** `Commands::Default` mixes `abort` (immediate exit)
+- **Unify the error path.** `Commands::Commit` mixes `abort` (immediate exit)
   with `raise` (caught by `bin/ai_git`). Pick exceptions everywhere so the
   top-level handler owns all exit codes.
 - **Define and document exit codes.** Today everything is `1` except `Interrupt`
@@ -73,9 +75,6 @@ checked, and empty model responses fail loudly. Nothing blocks a 1.0 today.
 - **Honor `NO_COLOR` and add `--no-color`.** `no_color` is config-file only.
   The de-facto `NO_COLOR` environment variable is ignored, and there is no
   per-run flag to turn color off.
-- **Handle flags after a subcommand.** `ai_git config --help` is silently
-  ignored (`Commands::Config.call` takes `_argv`), and an unknown leading flag
-  like `--foo` falls through to the default command and gets swallowed.
 - **Accept combined and terminated flags.** The hand-rolled `Options.parse`
   rejects `-ny`, `--` and `--flag=value`, all of which a user reasonably
   expects. Either document the limitation or move to `OptionParser`.
@@ -106,15 +105,16 @@ checked, and empty model responses fail loudly. Nothing blocks a 1.0 today.
 - **No test covers the HTTP layer.** `post_json`, `perform_request`, and the
   retry loop are entirely untested. Add a stub server (WEBrick or a `Net::HTTP`
   stub) covering success, 4xx, transient-then-success, and exhausted retries.
-- **No test covers `Commands::Default.call`** — the whole end-to-end path. The
+- **No test covers `Commands::Commit.call`** — the whole end-to-end path. The
   guards (`check_base_url!`, `check_secrets!`) and message generation are
   covered, but not `call` itself. Add an integration test that builds a scratch
   repo, stages a file, stubs the client, and asserts a commit lands.
 - **No test covers the confirmation prompt.** `Prompt.ask_action` and
   `Prompt.edit` are exercised by hand over a PTY only.
-- **Assert the docs match the parser.** `USAGE`, the flag table in
-  `doc/USAGE.md` and `Options` are three hand-maintained lists of the same
-  flags. A test that walks `Options.parse` would stop them drifting.
+- **Assert the docs match the parser.** `Commands::Help::COMMIT_TOPIC`, the
+  flag table in `doc/USAGE.md` and `Options` are three hand-maintained lists of
+  the same flags; the test that checks the topic names every flag is a fourth.
+  A test that walks `Options.parse` itself would stop them drifting.
 - **Add coverage measurement** (SimpleCov) with a floor enforced in CI.
 
 ## P2 — CI/CD & release

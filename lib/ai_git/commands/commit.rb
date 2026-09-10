@@ -1,10 +1,10 @@
 # frozen_string_literal: true
-# lib/ai_git/commands/default.rb
+# lib/ai_git/commands/commit.rb
 #
-# @purpose      Implement the default subcommand end to end: guard the staged
+# @purpose      Implement the `commit` subcommand end to end: guard the staged
 #               diff, generate a commit message, confirm it, then commit and
 #               push.
-# @exports      AIGit::Commands::Default: .call, .run, .generate_commit_message,
+# @exports      AIGit::Commands::Commit: .call, .run, .generate_commit_message,
 #               .normalize_message, .build_prompt.
 # @dependencies ai_git/options: parses the flags .call receives;
 #               ai_git/git: reads the staged tree, commits, and pushes;
@@ -12,6 +12,7 @@
 #               ai_git/config: supplies the model name and base-URL checks;
 #               ai_git/ai_client: generates the message;
 #               ai_git/prompt: runs the interactive confirmation and editor;
+#               ai_git/commands/help: supplies the text --help prints;
 #               ai_git/ui: prints the header, the message, and the outcome.
 # @sideEffects  Reads the repository, commits, pushes to origin, makes network
 #               requests, spawns the editor, and writes to stdout and stderr;
@@ -27,10 +28,11 @@ require_relative "../options"
 require_relative "../prompt"
 require_relative "../secrets"
 require_relative "../ui"
+require_relative "help"
 
 module AIGit
   module Commands
-    module Default
+    module Commit
       module_function
 
       def generate_commit_message(diff, model_name, temperature: 0.3)
@@ -64,7 +66,7 @@ module AIGit
 
       def call(argv = [])
         options = AIGit::Options.parse(argv)
-        return puts(AIGit::USAGE) if options.help?
+        return puts(AIGit::Commands::Help.topic("commit")) if options.help?
 
         staged = AIGit::Git.staged_files
         raise "No staged files. Use `git add` first." if staged.strip.empty?
