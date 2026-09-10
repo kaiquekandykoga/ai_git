@@ -17,6 +17,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Every action is now named: `ai_git commit` is the only path that writes and a
   bare `ai_git` does nothing.
+- `required_ruby_version` is `>= 3.1`, and CI runs the suite on 3.1, 3.2, 3.3,
+  3.4 and 4.0 across Ubuntu and macOS.
 - Command handling moved into dedicated `AIGit::Commands` modules.
 - `.gitignore` replaced the inherited C/CMake rules with Ruby ones.
 - `Gemfile.lock` is no longer tracked; the gem resolves fresh on every install.

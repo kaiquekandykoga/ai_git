@@ -8,13 +8,14 @@ Current state: 99 tests passing, RuboCop clean, CI on Ubuntu/macOS/FreeBSD,
 Dependabot watching Bundler and Actions, release automation wired to
 `AIGit::VERSION`, version 1.0.1. Packaging is settled: the gemspec carries
 contact, homepage, documentation and changelog metadata plus a
-`required_ruby_version` of `>= 4.0`, `CHANGELOG.md` ships with the gem,
-`.ruby-version` pins the toolchain, and `Gemfile.lock` is deliberately
-untracked. Every action is named: `ai_git commit` is the only path that
-writes, a bare `ai_git` does nothing, and `ai_git help [subcommand]` documents
-the rest. Committing is gated behind a confirmation prompt plus `--dry-run` /
-`--no-push` / `--yes` / `--force`, git reads are checked, and empty model
-responses fail loudly. Nothing blocks a 1.0 today.
+`required_ruby_version` of `>= 3.1` that CI tests on 3.1 through 4.0,
+`CHANGELOG.md` ships with the gem, `.ruby-version` pins the development
+toolchain, and `Gemfile.lock` is deliberately untracked. Every action is
+named: `ai_git commit` is the only path that writes, a bare `ai_git` does
+nothing, and `ai_git help [subcommand]` documents the rest. Committing is
+gated behind a confirmation prompt plus `--dry-run` / `--no-push` / `--yes` /
+`--force`, git reads are checked, and empty model responses fail loudly.
+Nothing blocks a 1.0 today.
 
 ---
 
@@ -123,8 +124,6 @@ responses fail loudly. Nothing blocks a 1.0 today.
 
 ## P2 — CI/CD & release
 
-- **Test more than one Ruby version.** The matrix pins `'4.0'` only. Add the
-  supported range so `required_ruby_version` (below) means something.
 - **Turn on `bundler-cache: true`** in all three workflows; installs are
   uncached today.
 - **Add a `gem build` + install smoke job** so packaging breaks are caught in

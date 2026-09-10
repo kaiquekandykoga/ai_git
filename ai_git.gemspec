@@ -11,8 +11,8 @@
 # @sideEffects  None.
 # @notes        `files` is an explicit Dir glob rather than a git listing, so a
 #               new top-level path ships only once it is added here.
-#               `required_ruby_version` matches the CI matrix and the RuboCop
-#               TargetRubyVersion; raise all three together.
+#               `required_ruby_version` is the floor the CI matrix tests and
+#               the RuboCop TargetRubyVersion; raise all three together.
 
 require_relative "lib/ai_git/version"
 
@@ -31,7 +31,7 @@ Gem::Specification.new do |spec|
   spec.executables = ["ai_git"]
   spec.require_paths = ["lib"]
   spec.requirements = []
-  spec.required_ruby_version = ">= 4.0"
+  spec.required_ruby_version = ">= 3.1"
 
   spec.homepage = "https://github.com/kaiquekandykoga/ai_git"
   spec.metadata = {
