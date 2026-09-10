@@ -126,7 +126,7 @@ module AIGit
       end
 
       def unknown_topic_error(name)
-        "Unknown help topic: #{name}. Known topics: #{TOPICS.keys.join(', ')}."
+        "Unknown help topic: #{name}. Known topics: #{TOPICS.keys.join(", ")}."
       end
     end
   end

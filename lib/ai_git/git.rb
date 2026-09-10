@@ -87,7 +87,7 @@ module AIGit
     def command_error(argv, stderr, status)
       detail = stderr.to_s.strip
       detail = "#{detail[0, MAX_ERROR_DETAIL]}…" if detail.length > MAX_ERROR_DETAIL
-      header = "Command failed: #{argv.join(' ')} (exit #{status.exitstatus})"
+      header = "Command failed: #{argv.join(" ")} (exit #{status.exitstatus})"
 
       detail.empty? ? header : "#{header}\n#{detail}"
     end

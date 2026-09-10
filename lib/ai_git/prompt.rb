@@ -51,7 +51,7 @@ module AIGit
     end
 
     def edit(message)
-      editor = ENV["VISUAL"] || ENV["EDITOR"]
+      editor = ENV["VISUAL"] || ENV.fetch("EDITOR", nil)
       raise "Cannot edit: set $EDITOR or $VISUAL first." if editor.to_s.strip.empty?
 
       Tempfile.create(["ai_git_commit_msg", ".txt"]) do |file|

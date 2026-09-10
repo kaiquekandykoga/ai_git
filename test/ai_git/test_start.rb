@@ -118,7 +118,7 @@ class TestStart < Test::Unit::TestCase
   def test_config_subcommand_marks_a_missing_config_file
     with_config_dir(nil) do |dir|
       out = with_captured_stdout { AIGit.start(["config"]) }
-      assert_include out, "#{File.join(dir, 'config.yml')} (not found)"
+      assert_include out, "#{File.join(dir, "config.yml")} (not found)"
     end
   end
 end

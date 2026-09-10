@@ -44,8 +44,8 @@ module AIGit
 
     # A preamble is a whole announcing sentence, never a bare leading word: an
     # ordinary title such as "Output the resolved settings" must survive.
-    LABELLED_PREAMBLE = /\A(here|output|generated|result|response|note)\s*:/i.freeze
-    BARE_LANGUAGE_TAG = /\A(json|markdown|text|plaintext)\z/i.freeze
+    LABELLED_PREAMBLE = /\A(here|output|generated|result|response|note)\s*:/i
+    BARE_LANGUAGE_TAG = /\A(json|markdown|text|plaintext)\z/i
     ANNOUNCING_PREAMBLE = /
       \A(
           (here(\s+is|'s|\s+are)?|below\s+is)\b.*\b(commit\s+message|message)\b
@@ -53,9 +53,9 @@ module AIGit
         | the\s+(commit\s+message|review)\s+is\b
         | (generated|suggested|proposed)\s+commit\s+message\b
       )
-    /ix.freeze
-    CODE_FENCE = /\A`{3,}/.freeze
-    ESCAPED_MESSAGE = /\A[^\n]*\\n\\n[^\n]*\z/.freeze
+    /ix
+    CODE_FENCE = /\A`{3,}/
+    ESCAPED_MESSAGE = /\A[^\n]*\\n\\n[^\n]*\z/
 
     def complete(prompt:, model_name:, temperature:)
       sanitize(openai_complete(prompt, model_name, temperature))
@@ -130,7 +130,7 @@ module AIGit
       hint = response.code.to_i == 404 ? " Check the model name and base URL (see `ai_git config`)." : ""
 
       "#{provider} returned HTTP #{response.code} at #{uri}.#{hint}" \
-        "#{body.empty? ? '' : "\n#{body}"}"
+        "#{"\n#{body}" unless body.empty?}"
     end
 
     def connection_error_message(error)
@@ -152,7 +152,7 @@ module AIGit
     def unescape_newlines(text)
       return text unless text.match?(ESCAPED_MESSAGE)
 
-      text.gsub(/\\n/, "\n")
+      text.gsub("\\n", "\n")
     end
 
     def strip_code_fences(lines)

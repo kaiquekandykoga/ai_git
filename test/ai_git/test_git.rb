@@ -33,7 +33,7 @@ class TestGit < Test::Unit::TestCase
 
   def run_git(*args)
     stdout, stderr, status = Open3.capture3("git", *args)
-    raise "git #{args.join(' ')} failed: #{stderr}" unless status.success?
+    raise "git #{args.join(" ")} failed: #{stderr}" unless status.success?
 
     stdout
   end

@@ -41,7 +41,7 @@ module AIGit
       codes = styles.map { |style| CODES[style] }.compact
       return text.to_s if codes.empty?
 
-      "\e[#{codes.join(';')}m#{text}\e[0m"
+      "\e[#{codes.join(";")}m#{text}\e[0m"
     end
 
     def bold(text)

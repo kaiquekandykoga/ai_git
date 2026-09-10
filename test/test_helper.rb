@@ -34,8 +34,8 @@ ensure
   mod.define_singleton_method(name, original)
 end
 
-def with_settings(settings, &block)
-  with_stub(AIGit::Config, :settings, -> { settings }, &block)
+def with_settings(settings, &)
+  with_stub(AIGit::Config, :settings, -> { settings }, &)
 end
 
 def with_config_dir(contents, filename: "config.yml")

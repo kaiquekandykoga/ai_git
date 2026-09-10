@@ -34,7 +34,7 @@ module AIGit
     SUSPICIOUS_ASSIGNMENT = /
       \b(api[_-]?key|secret|password|passwd|token|access[_-]?key)\b
       \s*[:=]\s*["'][^"']{8,}["']
-    /ix.freeze
+    /ix
 
     def scan(staged_files, diff)
       { blocking: blocking_findings(staged_files, diff), warnings: warning_findings(diff) }

@@ -30,7 +30,7 @@ module AIGit
     DEFAULT_MODEL = "ggml-org/gemma-4-E4B-it-GGUF:Q8_0"
     DEFAULT_BASE_URL = "http://127.0.0.1:8080"
     ENDPOINT = "/v1/chat/completions"
-    LOOPBACK_HOST = /\A(localhost|127(\.\d{1,3}){3}|::1|0:0:0:0:0:0:0:1)\z/i.freeze
+    LOOPBACK_HOST = /\A(localhost|127(\.\d{1,3}){3}|::1|0:0:0:0:0:0:0:1)\z/i
     CONFIG_DIR_NAME = ".ai_git"
     CONFIG_FILENAMES = %w[config.yml config.yaml].freeze
     SETTING_KEYS = %w[model_name base_url no_color].freeze
@@ -85,8 +85,8 @@ module AIGit
       unknown = data.keys - SETTING_KEYS
       return data if unknown.empty?
 
-      raise "Unknown setting#{'s' if unknown.length > 1} in #{path}: #{unknown.join(', ')}. " \
-            "Known settings: #{SETTING_KEYS.join(', ')}."
+      raise "Unknown setting#{"s" if unknown.length > 1} in #{path}: #{unknown.join(", ")}. " \
+            "Known settings: #{SETTING_KEYS.join(", ")}."
     end
 
     def string_setting(key, default)
