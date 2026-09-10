@@ -6,6 +6,7 @@
 # @exports      Subject under test: AIGit::Git.
 # @dependencies test/test_helper: loads the library and the test framework;
 #               git: the binary the assertions run against;
+#               json: checks that a scrubbed diff encodes cleanly;
 #               fileutils, tmpdir: build and remove the throwaway repositories.
 # @sideEffects  Creates temporary directories, initializes git repositories in
 #               them, changes the working directory, and spawns git.
@@ -14,6 +15,7 @@
 
 require_relative "../test_helper"
 require "fileutils"
+require "json"
 require "tmpdir"
 
 class TestGit < Test::Unit::TestCase
@@ -104,5 +106,30 @@ class TestGit < Test::Unit::TestCase
     Dir.mktmpdir("ai_git space") do |dir|
       AIGit::Git.run_command("test", "-d", dir)
     end
+  end
+
+  def test_diff_of_a_non_utf8_file_is_valid_utf8
+    in_temp_repo do
+      File.binwrite("latin1.txt", "caf\xE9 na\xEFve\n")
+      run_git("add", "latin1.txt")
+
+      diff = AIGit::Git.diff
+      assert_equal Encoding::UTF_8, diff.encoding
+      assert_true diff.valid_encoding?, "the diff must be valid UTF-8"
+    end
+  end
+
+  def test_diff_of_a_non_utf8_file_survives_json_encoding
+    in_temp_repo do
+      File.binwrite("latin1.txt", "caf\xE9\n")
+      run_git("add", "latin1.txt")
+
+      assert_nothing_raised { JSON.generate({ diff: AIGit::Git.diff }) }
+    end
+  end
+
+  def test_scrub_replaces_invalid_bytes_and_keeps_valid_text
+    assert_equal "caf#{AIGit::Git::REPLACEMENT}", AIGit::Git.scrub((+"caf\xE9").force_encoding(Encoding::UTF_8))
+    assert_equal "café", AIGit::Git.scrub("café")
   end
 end

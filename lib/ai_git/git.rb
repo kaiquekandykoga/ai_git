@@ -3,15 +3,18 @@
 #
 # @purpose      Wrap the git porcelain this tool drives: inspect the staged
 #               tree, then commit and push on the user's behalf.
-# @exports      AIGit::Git: NOT_A_REPOSITORY, MAX_ERROR_DETAIL, .repository?,
-#               .ensure_repository!, .staged_files, .diff, .current_branch,
-#               .detached_head?, .commit_with_message, .push_current_branch.
+# @exports      AIGit::Git: NOT_A_REPOSITORY, MAX_ERROR_DETAIL, REPLACEMENT,
+#               .repository?, .ensure_repository!, .staged_files, .diff,
+#               .current_branch, .detached_head?, .scrub,
+#               .commit_with_message, .push_current_branch.
 # @dependencies git: every operation shells out to the binary;
 #               open3: captures stdout, stderr, and exit status together;
 #               tempfile: holds the commit message passed to `git commit -F`.
 # @sideEffects  Spawns git subprocesses; writes a tempfile; mutates the
 #               repository and the remote on commit and push.
 # @notes        Raises a bare string message; bin/ai_git renders it and exits 1.
+#               Captured output is scrubbed to valid UTF-8 so a diff of a
+#               non-UTF-8 file cannot break JSON encoding downstream.
 
 require "open3"
 require "tempfile"
@@ -22,6 +25,7 @@ module AIGit
 
     NOT_A_REPOSITORY = "Not a git repository (or any of the parent directories)."
     MAX_ERROR_DETAIL = 500
+    REPLACEMENT = "\uFFFD"
 
     def repository?
       _stdout, _stderr, status = Open3.capture3("git", "rev-parse", "--git-dir")
@@ -57,9 +61,18 @@ module AIGit
 
     def capture(*argv)
       stdout, stderr, status = Open3.capture3(*argv)
-      return stdout if status.success?
+      return scrub(stdout) if status.success?
 
       raise command_error(argv, stderr, status)
+    end
+
+    # git hands back the bytes it stored, whatever they are. A Latin-1 file
+    # makes the diff invalid UTF-8, which the JSON encoder in the HTTP client
+    # refuses; replace the offending bytes here, at the source.
+    def scrub(text)
+      string = text.to_s
+      string = string.dup.force_encoding(Encoding::UTF_8) unless string.encoding == Encoding::UTF_8
+      string.valid_encoding? ? string : string.scrub(REPLACEMENT)
     end
 
     def run_command(cmd, *args)
