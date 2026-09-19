@@ -18,77 +18,41 @@ This repository is open source and ships to RubyGems as the `ai_git` gem. Every 
 
 ## 2. Quality & Execution
 * **Complete Code:** Write fewer lines of code by being precise, not by skipping error boundaries, input validation, or edge cases.
-* **Comments:** See section 3. Section 3 is the complete rule; do not infer additional comment conventions from surrounding code.
+* **Readable Code:** Clear names and single-responsibility methods carry the meaning; comments cover what the code cannot say. Section 3 is the complete rule; do not infer additional comment conventions from surrounding code.
 * **Strict Verification:** Never assume success. Run relevant test suites and linters before marking a task complete.
 * **No Ghost Fixes:** Report raw failures honestly. Fix errors directly; never mask or suppress them to save output tokens.
 
 ## 3. Comments
+Comments are allowed anywhere they earn their place. The first tool for making code understandable is the code, so a comment is what remains after the code itself has been made clear.
 
-### 3.1 Which files carry a header
-**Required** — these and nothing else:
-* every `*.rb` under `lib/`, at any depth
-* every `*.rb` under `test/`, at any depth
-* every file under `bin/` (today `bin/ai_git`; a file added there later is required too)
-* `Rakefile`, `Gemfile`, and `ai_git.gemspec`
+### 3.1 Readable code first
+Before writing a comment, spend the effort on the code:
 
-**Exempt — do not add a header:**
-* Prose: every `*.md`, including `README.md`, `doc/TODO.md`, and this file, plus `LICENSE`. A Markdown document states its own subject in its title and opening lines; a header would duplicate it.
-* Formats with no comment syntax: `*.json`, `*.lock`.
-* Repo and CI config: `.gitignore`, `.rubocop.yml`, `.claude/**`, `.github/**`.
+* **Name things for what they are.** `staged_files`, `insecure_remote_base_url?`, `retry_delay` — a name that states the meaning removes the need to explain it. Avoid abbreviations, single letters outside a short block, and names that describe a type rather than a role.
+* **One responsibility per method.** A method does one thing at one level of abstraction, short enough to read at a glance. When a comment would be needed to mark where a method changes subject, extract that part into a method whose name says what the comment would have said.
+* **Make the structure carry the meaning.** Guard clauses over nesting, a well-named predicate over an inline condition, a named constant over a literal.
 
-A path that falls outside both lists is exempt. Do not extend either list by analogy — to cover a new kind of path, edit this section first.
+The payoff is fewer comments: readable code needs little explanation, and there is nothing to keep in sync.
 
-### 3.2 When to write one
-Write the header when you create a required file. Add or update it when you change the behavior, exports, dependencies, or side effects of a required file you are already editing: a required file you touch leaves the edit carrying a correct header.
+### 3.2 When to comment
+Write a comment where the code cannot explain itself, however well written:
 
-### 3.3 Format
-The header sits at the top of the file: after the shebang and `# frozen_string_literal: true` if present, with no blank line between them, and before everything else — the first `require`, or the first statement in a file that has none. One blank line follows it.
+* Logic whose derivation is not visible — a formula, an algorithm, a non-obvious regex or bit of parsing.
+* A workaround for the behavior of an external tool, service, or format, naming what forced it.
+* A deliberate choice whose reason lives outside the file — a safety or security rule, an ordering constraint, an edge case a reader would otherwise take for a mistake.
+* A file whose purpose is not obvious from its name and contents: a short comment at the top, in prose, saying what it is for.
 
-```
-# lib/ai_git/git.rb
-#
-# @purpose      Wrap the git porcelain this tool drives: inspect the staged
-#               tree, then commit and push on the user's behalf.
-# @exports      AIGit::Git: NOT_A_REPOSITORY, MAX_ERROR_DETAIL, .repository?,
-#               .ensure_repository!, .staged_files, .diff, .current_branch,
-#               .detached_head?, .commit_with_message, .push_current_branch.
-# @dependencies git: every operation shells out to the binary;
-#               open3: captures stdout, stderr, and exit status together;
-#               tempfile: holds the commit message passed to `git commit -F`.
-# @sideEffects  Spawns git subprocesses; writes a tempfile; mutates the
-#               repository and the remote on commit and push.
-# @notes        Raises a bare string message; bin/ai_git renders it and exits 1.
-```
+Explain the *why*, not the *what*: a comment that restates the line above it is noise, and it rots. Keep it short — one or two lines is usually enough — and delete it when the code it describes is gone.
 
-* Use the file's native comment marker (`#` for Ruby, Rakefile, gemspec, and Gemfile).
-* First line: the path exactly as it appears on disk, repo-relative, with no `@` tag.
-* Second line: the bare comment marker.
-* Tags start at column 3. Values start at column 17. On a continuation line the marker sits in column 1, columns 2–16 are spaces, and the value resumes at column 17.
-* No line exceeds 80 characters, counting the comment marker. Column 80 is usable; the `@notes` line above ends there.
-* End every field's value with a period. Within `@exports`, separate names with `,`; within `@dependencies`, separate pairs with `;`.
-* The block above is the reference implementation of this format; match it exactly.
+### 3.3 Not permitted
+* Commented-out code. Delete it; git remembers.
+* Comments that paraphrase the code, mark obvious sections, or decorate the file with banners and rule-off lines.
+* Structured tag headers (`@purpose`, `@exports`, `@dependencies`, `@sideEffects`) — the project dropped them in favor of readable code and targeted comments. Do not reintroduce them, and do not add a header to a file just because other files have one.
 
-### 3.4 Field content
-Fields appear in this order and no other.
+Machine-read comments are not comments for this purpose: the shebang, `# frozen_string_literal: true`, and directives such as `# rubocop:disable` / `# rubocop:enable` are always allowed wherever the tool requires them.
 
-* `@purpose` — required. 1–2 sentences on why the file exists and its single responsibility.
-* `@exports` — the public contract: constants, modules, classes, methods, rake tasks, CLI subcommands and flags. Name them; do not explain them. Private helpers are not exports. For a test file, name the subject under test rather than the individual test methods; for a test-support file with no subject under test, name what it gives the tests that require it. Omit the field only when the file defines nothing another file or the CLI can reach.
-* `@dependencies` — `name: purpose/interaction` pairs separated by `;`. Internal modules, gems, and external binaries only. Omit stdlib requires unless the interaction is non-obvious. Omit the field when there are none.
-* `@sideEffects` — required. Filesystem writes, network calls, subprocess spawns, environment mutation, global state, signal handlers, `exit`. Write `None.` when the file is pure — the absence of side effects is information worth stating.
-* `@notes` — non-obvious constraints, deliberate design choices, edge-case handling. Omit the field rather than padding it.
-
-### 3.5 No body comments
-No inline or block comment inside a module, class, or method body, and none between top-level statements. Commented-out code is never permitted. Two exceptions, and no others:
-
-* **Machine-read comments are not body comments.** The shebang, `# frozen_string_literal: true`, and tool directives such as `# rubocop:disable` / `# rubocop:enable` are always allowed wherever the tool requires them. They instruct a tool, not a reader.
-* **One explanatory inline comment, one line**, on a line that implements a mathematical algorithm whose derivation is unreadable from the code, or that works around a documented bug in an external tool. Name that reason in the comment. At most one such comment per method, or per top-level statement outside any method.
-
-The tree was swept clean of body comments in one pass on 2026-08-29. Every comment left in a required file is a header, a machine-read comment, or the one-line exception above. Keep it that way: a body comment that reaches the tree is a defect in the change that introduced it, not a cleanup task for later.
-
-### 3.6 Keep it true
-The header is part of the file. When behavior, exports, dependencies, or side effects change, update the affected lines in the same edit and delete any line that no longer holds.
-
-A stale header is a defect in the file that carries it. Fix it in a file you are already editing; when you notice one elsewhere, report it and move on rather than opening the file.
+### 3.4 Keep it true
+A comment is part of the code around it. When that code changes, update the comment in the same edit and delete it if it no longer holds. A stale comment is a defect in the file that carries it: fix it in a file you are already editing, and report one you notice elsewhere rather than opening the file for it.
 
 ## 4. Markdown file names
 Every `*.md` file in this repository is named in upper case: the stem is all capitals, words separated by `_`, and the extension stays lower-case `.md` — `README.md`, `AGENTS.md`, `doc/USAGE.md`, `CODE_OF_CONDUCT.md`. Directory names are unaffected; `doc/` stays lower-case.

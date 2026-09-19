@@ -1,25 +1,4 @@
 # frozen_string_literal: true
-# lib/ai_git/ai_client.rb
-#
-# @purpose      Talk to the OpenAI-compatible chat endpoint: post the prompt,
-#               retry transient failures, and strip the model's wrapping from
-#               the reply.
-# @exports      AIGit::AIClient: READ_TIMEOUT_SECONDS, OPEN_TIMEOUT_SECONDS,
-#               MAX_ATTEMPTS, RETRY_BASE_DELAY, TRANSIENT_STATUSES,
-#               RETRYABLE_ERRORS, LABELLED_PREAMBLE, BARE_LANGUAGE_TAG,
-#               ANNOUNCING_PREAMBLE, .complete, .sanitize.
-# @dependencies ai_git/config: supplies the base URL, endpoint, and provider
-#               name used in requests and error messages;
-#               json: encodes the request body and parses the response;
-#               net/http, uri: perform the HTTP POST.
-# @sideEffects  Makes network requests to the configured base URL; sleeps
-#               between retries; raises a string message on failure.
-# @notes        Retries with exponential backoff on the listed connection
-#               errors and status codes only; any other status raises at once.
-#               Sanitizing also unescapes a reply whose only newlines are
-#               literal backslash-n, which some models emit, and only drops
-#               a leading line that is a whole preamble sentence, so a title
-#               opening with "Output" or "The changes" is left alone.
 
 require "json"
 require "net/http"
@@ -55,6 +34,8 @@ module AIGit
       )
     /ix
     CODE_FENCE = /\A`{3,}/
+    # Some models emit a whole message whose only newlines are a literal
+    # backslash-n; matching that shape lets sanitizing unescape it.
     ESCAPED_MESSAGE = /\A[^\n]*\\n\\n[^\n]*\z/
 
     def complete(prompt:, model_name:, temperature:)

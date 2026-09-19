@@ -1,16 +1,4 @@
 # frozen_string_literal: true
-# test/ai_git/test_commit.rb
-#
-# @purpose      Cover the commit command: message normalizing, prompt
-#               building, and the base-URL and secret guards.
-# @exports      Subject under test: AIGit::Commands::Commit.
-# @dependencies test/test_helper: loads the library, the framework, with_stub,
-#               and with_settings;
-#               stringio: captures the warnings the guards print.
-# @sideEffects  Stubs AIGit::AIClient.complete and the resolved configuration
-#               within blocks that restore both afterwards.
-# @notes        The generator is always stubbed, so no test reaches the model
-#               server or the repository.
 
 require_relative "../test_helper"
 require "stringio"

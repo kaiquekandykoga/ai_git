@@ -1,15 +1,4 @@
 # frozen_string_literal: true
-# test/ai_git/test_help.rb
-#
-# @purpose      Cover the help command: the overview, the per-subcommand
-#               topics, the flag aliases, and the unknown-topic error.
-# @exports      Subject under test: AIGit::Commands::Help.
-# @dependencies test/test_helper: loads the library and the test framework;
-#               stringio: captures what the command prints.
-# @sideEffects  Replaces $stdout within a block that restores it.
-# @notes        Asserts that the overview names every routed subcommand and
-#               that every topic is reachable, so a subcommand added to the
-#               router without help text fails the suite.
 
 require_relative "../test_helper"
 require "stringio"

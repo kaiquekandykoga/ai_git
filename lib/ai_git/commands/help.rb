@@ -1,14 +1,4 @@
 # frozen_string_literal: true
-# lib/ai_git/commands/help.rb
-#
-# @purpose      Implement the `help` subcommand and own every line of help
-#               text: list what ai_git can do, or describe one subcommand.
-# @exports      AIGit::Commands::Help: USAGE, NO_SUBCOMMAND, COMMIT_TOPIC,
-#               CONFIG_TOPIC, HELP_TOPIC, TOPICS, ALIASES, .call, .topic.
-# @sideEffects  Writes the usage or one topic to stdout; raises a string when
-#               the named topic is unknown.
-# @notes        The router, the bare invocation and a subcommand's own --help
-#               all read from here, so the help a user sees has one source.
 
 module AIGit
   module Commands

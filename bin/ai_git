@@ -1,16 +1,5 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
-# bin/ai_git
-#
-# @purpose      Executable entry point for the ai_git CLI: load the library and
-#               hand ARGV to AIGit.start.
-# @exports      ai_git: the `commit`, `config` and `help` subcommands and the
-#               -h/--help and -v/--version flags.
-# @dependencies lib/ai_git: supplies AIGit.start and AIGit::UI.error.
-# @sideEffects  Runs the whole CLI; exits 130 on interrupt and 1 on any other
-#               error, after printing the message to stderr.
-# @notes        Catches StandardError only, so the string messages the library
-#               raises surface as one clean line instead of a backtrace.
 
 require_relative "../lib/ai_git"
 
@@ -20,6 +9,7 @@ rescue Interrupt
   warn "\nAborted."
   exit 130
 rescue StandardError => e
+  # The library raises bare strings, so a failure reads as one line, not a backtrace.
   AIGit::UI.error("ai_git: #{e.message}")
   exit 1
 end

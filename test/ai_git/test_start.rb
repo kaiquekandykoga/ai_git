@@ -1,17 +1,4 @@
 # frozen_string_literal: true
-# test/ai_git/test_start.rb
-#
-# @purpose      Cover the CLI router: the bare invocation that does nothing,
-#               the help and version flags, subcommand dispatch, and the exit
-#               on an unknown subcommand or option.
-# @exports      Subject under test: AIGit.start.
-# @dependencies test/test_helper: loads the library, the test framework,
-#               with_stub, and with_config_dir;
-#               stringio: captures what the router prints.
-# @sideEffects  Replaces $stdout within a block that restores it, points the
-#               configuration at a temporary directory, stubs the commit
-#               command to keep dispatch off the repository, and asserts on
-#               the SystemExit raised by the unknown-argument paths.
 
 require_relative "../test_helper"
 require "stringio"

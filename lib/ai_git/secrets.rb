@@ -1,14 +1,4 @@
 # frozen_string_literal: true
-# lib/ai_git/secrets.rb
-#
-# @purpose      Screen the staged paths and diff for credentials before the
-#               diff leaves the machine, splitting blocking hits from warnings.
-# @exports      AIGit::Secrets: RISKY_PATHS, RISKY_CONTENT,
-#               SUSPICIOUS_ASSIGNMENT, .scan.
-# @sideEffects  None.
-# @notes        Only added lines are scanned: removing a secret is not a leak.
-#               A bare key/secret/password assignment warns rather than blocks,
-#               because the pattern also matches ordinary code.
 
 module AIGit
   module Secrets
@@ -31,6 +21,7 @@ module AIGit
       "a Google API key" => /\bAIza[0-9A-Za-z_-]{35}\b/
     }.freeze
 
+    # Warns rather than blocks: this shape also matches ordinary code.
     SUSPICIOUS_ASSIGNMENT = /
       \b(api[_-]?key|secret|password|passwd|token|access[_-]?key)\b
       \s*[:=]\s*["'][^"']{8,}["']
@@ -59,6 +50,7 @@ module AIGit
       ["added lines assign a value to a key/secret/password/token name"]
     end
 
+    # Only added lines can leak; deleting a secret from the tree discloses nothing.
     def added_lines(diff)
       diff.to_s.lines.select { |line| line.start_with?("+") && !line.start_with?("+++") }.join
     end

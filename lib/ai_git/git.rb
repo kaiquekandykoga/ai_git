@@ -1,20 +1,4 @@
 # frozen_string_literal: true
-# lib/ai_git/git.rb
-#
-# @purpose      Wrap the git porcelain this tool drives: inspect the staged
-#               tree, then commit and push on the user's behalf.
-# @exports      AIGit::Git: NOT_A_REPOSITORY, MAX_ERROR_DETAIL, REPLACEMENT,
-#               .repository?, .ensure_repository!, .staged_files, .diff,
-#               .current_branch, .detached_head?, .scrub,
-#               .commit_with_message, .push_current_branch.
-# @dependencies git: every operation shells out to the binary;
-#               open3: captures stdout, stderr, and exit status together;
-#               tempfile: holds the commit message passed to `git commit -F`.
-# @sideEffects  Spawns git subprocesses; writes a tempfile; mutates the
-#               repository and the remote on commit and push.
-# @notes        Raises a bare string message; bin/ai_git renders it and exits 1.
-#               Captured output is scrubbed to valid UTF-8 so a diff of a
-#               non-UTF-8 file cannot break JSON encoding downstream.
 
 require "open3"
 require "tempfile"
@@ -66,9 +50,8 @@ module AIGit
       raise command_error(argv, stderr, status)
     end
 
-    # git hands back the bytes it stored, whatever they are. A Latin-1 file
-    # makes the diff invalid UTF-8, which the JSON encoder in the HTTP client
-    # refuses; replace the offending bytes here, at the source.
+    # git hands back the bytes it stored, so a Latin-1 file makes the diff invalid
+    # UTF-8, which the JSON encoder in the HTTP client refuses.
     def scrub(text)
       string = text.to_s
       string = string.dup.force_encoding(Encoding::UTF_8) unless string.encoding == Encoding::UTF_8

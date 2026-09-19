@@ -1,13 +1,4 @@
 # frozen_string_literal: true
-# test/ai_git/test_config.rb
-#
-# @purpose      Cover the resolution of provider settings from the defaults and
-#               from the YAML config file, including its validation.
-# @exports      Subject under test: AIGit::Config.
-# @dependencies test/test_helper: loads the library, the test framework, and
-#               with_config_dir.
-# @sideEffects  Points AIGit::Config at a temporary directory and drops the
-#               memoized settings, both restored when each block ends.
 
 require_relative "../test_helper"
 

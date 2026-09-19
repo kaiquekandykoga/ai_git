@@ -1,25 +1,4 @@
 # frozen_string_literal: true
-# lib/ai_git/commands/commit.rb
-#
-# @purpose      Implement the `commit` subcommand end to end: guard the staged
-#               diff, generate a commit message, confirm it, then commit and
-#               push.
-# @exports      AIGit::Commands::Commit: .call, .run, .generate_commit_message,
-#               .normalize_message, .build_prompt.
-# @dependencies ai_git/options: parses the flags .call receives;
-#               ai_git/git: reads the staged tree, commits, and pushes;
-#               ai_git/secrets: screens the diff before it leaves the machine;
-#               ai_git/config: supplies the model name and base-URL checks;
-#               ai_git/ai_client: generates the message;
-#               ai_git/prompt: runs the interactive confirmation and editor;
-#               ai_git/commands/help: supplies the text --help prints;
-#               ai_git/ui: prints the header, the message, and the outcome.
-# @sideEffects  Reads the repository, commits, pushes to origin, makes network
-#               requests, spawns the editor, and writes to stdout and stderr;
-#               raises a string on any refusal.
-# @notes        Refuses to send the diff over plain http to a non-loopback host
-#               or to send likely secrets, unless --force is passed. The
-#               confirmation prompt is skipped unless both streams are a tty.
 
 require_relative "../ai_client"
 require_relative "../config"
@@ -60,7 +39,10 @@ module AIGit
         lines = text.lines.map(&:chomp)
         return text if lines.length < 2
 
+        # git reads the first line as the subject, so the body needs a blank line
+        # between it and the title whether or not the model wrote one.
         lines.insert(1, "") unless lines[1].empty?
+
         lines.join("\n").gsub(/\n{3,}/, "\n\n").strip
       end
 

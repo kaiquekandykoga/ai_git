@@ -1,25 +1,4 @@
 # frozen_string_literal: true
-# lib/ai_git/config.rb
-#
-# @purpose      Resolve the model provider settings from the defaults and the
-#               user's YAML config file, and judge whether the base URL is safe
-#               to send to.
-# @exports      AIGit::Config: PROVIDER, DEFAULT_MODEL, DEFAULT_BASE_URL,
-#               ENDPOINT, LOOPBACK_HOST, CONFIG_DIR_NAME, CONFIG_FILENAMES,
-#               SETTING_KEYS, TRUTHY_VALUES, .provider, .config_dir,
-#               .config_path, .settings, .reset!, .model_name, .base_url,
-#               .no_color?, .endpoint, .base_uri, .valid_uri?,
-#               .loopback_base_url?, .insecure_remote_base_url?.
-# @dependencies uri: parses and validates the configured base URL;
-#               yaml: parses ~/.ai_git/config.yml.
-# @sideEffects  Reads ~/.ai_git/config.yml on first use and memoizes it;
-#               raises a string on a malformed file, an unknown setting, or a
-#               malformed URL.
-# @notes        The file is read once per process, so .reset! exists to drop the
-#               memo. An unknown key raises rather than being ignored, so a
-#               typo never silently leaves the default in place. Only a loopback
-#               host keeps the diff on this machine, so every other host counts
-#               as remote for the plain-http refusal.
 
 require "uri"
 require "yaml"
@@ -30,6 +9,8 @@ module AIGit
     DEFAULT_MODEL = "ggml-org/gemma-4-E4B-it-GGUF:Q8_0"
     DEFAULT_BASE_URL = "http://127.0.0.1:8080"
     ENDPOINT = "/v1/chat/completions"
+    # Only a loopback host keeps the diff on this machine, so every other host
+    # counts as remote when refusing plain http.
     LOOPBACK_HOST = /\A(localhost|127(\.\d{1,3}){3}|::1|0:0:0:0:0:0:0:1)\z/i
     CONFIG_DIR_NAME = ".ai_git"
     CONFIG_FILENAMES = %w[config.yml config.yaml].freeze
@@ -59,6 +40,7 @@ module AIGit
       @settings ||= load_settings
     end
 
+    # The config file is read once per process; tests drop the memo.
     def reset!
       @settings = nil
     end
@@ -84,6 +66,8 @@ module AIGit
       data = data.transform_keys(&:to_s)
       unknown = data.keys - SETTING_KEYS
       return data if unknown.empty?
+
+      # Raise rather than ignore, so a typo never silently keeps the default.
 
       raise "Unknown setting#{"s" if unknown.length > 1} in #{path}: #{unknown.join(", ")}. " \
             "Known settings: #{SETTING_KEYS.join(", ")}."
@@ -138,6 +122,7 @@ module AIGit
     end
 
     def loopback_base_url?
+      # An IPv6 host arrives bracketed, as in http://[::1]:8080.
       base_uri.host.to_s.delete("[]").match?(LOOPBACK_HOST)
     end
 

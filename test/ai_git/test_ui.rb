@@ -1,16 +1,4 @@
 # frozen_string_literal: true
-# test/ai_git/test_ui.rb
-#
-# @purpose      Cover the output layer: when ANSI codes are emitted, when they
-#               are suppressed, and how key/value lines are formatted.
-# @exports      Subject under test: AIGit::UI.
-# @dependencies test/test_helper: loads the library, the test framework, and
-#               with_settings;
-#               stringio: backs the fake terminal and captures output.
-# @sideEffects  Replaces $stdout, restored in teardown, and stubs the resolved
-#               configuration within the block that restores it.
-# @notes        A StringIO subclass answering tty? as true stands in for a
-#               terminal, since the real test stream is never one.
 
 require_relative "../test_helper"
 require "stringio"

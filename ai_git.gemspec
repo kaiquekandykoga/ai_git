@@ -1,18 +1,4 @@
 # frozen_string_literal: true
-# ai_git.gemspec
-#
-# @purpose      Describe the ai_git gem for packaging: its metadata, the files
-#               that ship, and the executable RubyGems installs.
-# @exports      Gem::Specification for "ai_git": name, version, summary,
-#               description, license, author, email, files, executables,
-#               require_paths, requirements, required_ruby_version, homepage,
-#               metadata.
-# @dependencies lib/ai_git/version: supplies AIGit::VERSION as the gem version.
-# @sideEffects  None.
-# @notes        `files` is an explicit Dir glob rather than a git listing, so a
-#               new top-level path ships only once it is added here.
-#               `required_ruby_version` is the floor the CI matrix tests and
-#               the RuboCop TargetRubyVersion; raise all three together.
 
 require_relative "lib/ai_git/version"
 
@@ -31,6 +17,7 @@ Gem::Specification.new do |spec|
   spec.executables = ["ai_git"]
   spec.require_paths = ["lib"]
   spec.requirements = []
+  # Raise together with the CI matrix and the RuboCop TargetRubyVersion.
   spec.required_ruby_version = ">= 3.1"
 
   spec.homepage = "https://github.com/kaiquekandykoga/ai_git"

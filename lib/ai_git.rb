@@ -1,19 +1,4 @@
 # frozen_string_literal: true
-# lib/ai_git.rb
-#
-# @purpose      Library entry point and CLI router: load every component, then
-#               dispatch the argument vector to the named subcommand.
-# @exports      AIGit: SUBCOMMANDS, HELP_FLAGS, VERSION_FLAGS, .start.
-# @dependencies ai_git/version, ai_git/config, ai_git/ui, ai_git/ai_client,
-#               ai_git/git: the components the subcommands build on;
-#               ai_git/commands/commit, ai_git/commands/config,
-#               ai_git/commands/help: the subcommands .start dispatches to.
-# @sideEffects  Prints the usage, the version or a hint to stdout; warns and
-#               exits 1 on an unknown subcommand or option; .start runs the
-#               selected subcommand.
-# @notes        Every action needs its subcommand named: an empty vector
-#               prints where to look and changes nothing, so a bare `ai_git`
-#               can no longer commit by accident.
 
 require_relative "ai_git/version"
 require_relative "ai_git/config"

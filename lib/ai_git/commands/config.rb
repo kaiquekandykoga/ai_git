@@ -1,21 +1,4 @@
 # frozen_string_literal: true
-# lib/ai_git/commands/config.rb
-#
-# @purpose      Implement the `config` subcommand: print the resolved provider
-#               settings and the file they come from, so the user can see what
-#               the tool will talk to.
-# @exports      AIGit::Commands::Config: .call, .resolved_rows, .config_file.
-# @dependencies ai_git/config: supplies every value printed and the path of
-#               the config file;
-#               ai_git/ai_client: supplies the read timeout shown;
-#               ai_git/commands/help: supplies the text --help prints;
-#               ai_git/ui: formats the heading and the key/value lines.
-# @sideEffects  Writes the resolved configuration or the help topic to stdout;
-#               raises a string on an unknown argument or when the config file
-#               cannot be resolved.
-# @notes        Every value is resolved before the first line is printed, so a
-#               broken config file reports its error instead of a half-printed
-#               listing.
 
 require_relative "../ai_client"
 require_relative "../config"
